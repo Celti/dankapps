@@ -16,6 +16,7 @@ Item {
 
     readonly property bool isSelected: imageItem ? ImageService.isSelected(imageItem.path) : false
     readonly property bool isFav: imageItem ? ImageService.isFavorite(imageItem.path) : false
+    readonly property bool isSelectionMode: ImageService.gallerySelectedCount > 0
 
     // Viewport visibility calculation to avoid loading off-screen images in large galleries
     readonly property real itemContentY: flickable ? root.mapToItem(flickable.contentItem, 0, 0).y : 0
@@ -44,8 +45,6 @@ Item {
         radius: 12
         clip: true
         color: Theme.surfaceContainerHigh
-        border.color: root.isSelected ? Theme.primary : (thumbMouse.containsMouse ? Qt.rgba(1, 1, 1, 0.4) : "transparent")
-        border.width: root.isSelected ? 2 : 1
 
         scale: thumbMouse.containsMouse ? 1.02 : 1.0
         Behavior on scale { NumberAnimation { duration: 120; easing.type: Theme.standardEasing } }
@@ -65,13 +64,30 @@ Item {
             sourceSize.height: 256
         }
 
+        // Selection Border & Highlight Tint Overlay (drawn on top of image)
+        Rectangle {
+            id: selectionOverlay
+            anchors.fill: parent
+            radius: 12
+            color: root.isSelected
+                ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, thumbMouse.containsMouse ? 0.22 : 0.16)
+                : "transparent"
+            border.color: root.isSelected
+                ? Theme.primary
+                : (thumbMouse.containsMouse ? Qt.rgba(1, 1, 1, 0.4) : "transparent")
+            border.width: root.isSelected ? 3 : (thumbMouse.containsMouse ? 1 : 0)
+
+            Behavior on color { ColorAnimation { duration: 120 } }
+            Behavior on border.color { ColorAnimation { duration: 120 } }
+        }
+
         // Dark gradient overlay for icons visibility on light photos
         Rectangle {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
             height: 44
-            visible: thumbMouse.containsMouse || root.isSelected || root.isFav
+            visible: thumbMouse.containsMouse || root.isSelected || root.isFav || root.isSelectionMode
             gradient: Gradient {
                 GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0.55) }
                 GradientStop { position: 1.0; color: "transparent" }
@@ -87,7 +103,7 @@ Item {
             width: 24
             height: 24
             radius: 12
-            visible: thumbMouse.containsMouse || root.isSelected
+            visible: thumbMouse.containsMouse || root.isSelected || root.isSelectionMode
             color: root.isSelected ? Theme.primary : Qt.rgba(0, 0, 0, 0.35)
             border.color: root.isSelected ? Theme.primary : Qt.rgba(1, 1, 1, 0.8)
             border.width: root.isSelected ? 0 : 1.5
@@ -142,7 +158,7 @@ Item {
             }
         }
 
-        // Body Click to Open in Viewer
+        // Body Click to Open in Viewer or Toggle Selection
         MouseArea {
             id: thumbMouse
             anchors.fill: parent
@@ -151,7 +167,11 @@ Item {
             z: -1
             onClicked: {
                 if (root.imageItem) {
-                    ImageService.openImageFromGallery(root.imageItem.path, root.imageItem.thumbnail || "");
+                    if (root.isSelectionMode) {
+                        ImageService.toggleSelect(root.imageItem.path);
+                    } else {
+                        ImageService.openImageFromGallery(root.imageItem.path, root.imageItem.thumbnail || "");
+                    }
                 }
             }
         }
