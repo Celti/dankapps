@@ -242,7 +242,9 @@ Singleton {
         editMode = false;
         cropMode = false;
         previewThumbnail = "";
-        loadGallery();
+        if (!galleryData) {
+            loadGallery();
+        }
     }
 
     function togglePlayback() {
@@ -307,6 +309,7 @@ Singleton {
         const initImg = Quickshell.env("DVIEW_INITIAL_IMAGE");
         if (initImg) {
             loadDirectoryFor(initImg);
+            loadGallery();
         } else {
             loadGallery();
         }

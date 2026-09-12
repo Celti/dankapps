@@ -206,7 +206,7 @@ FloatingWindow {
                 } else if (ImageService.inspectorOpen) {
                     ImageService.inspectorOpen = false;
                     event.accepted = true;
-                } else if (!ImageService.galleryMode && ImageService.galleryData.allImages && ImageService.galleryData.allImages.length > 0) {
+                } else if (!ImageService.galleryMode) {
                     ImageService.backToGallery();
                     event.accepted = true;
                 } else if (window.maximized) {

@@ -37,12 +37,12 @@ Rectangle {
 
         // Leading Icon / Navigation button (always present to prevent layout shift)
         DankActionButton {
-            readonly property bool canGoBack: !ImageService.galleryMode && ImageService.galleryData.allImages && ImageService.galleryData.allImages.length > 0
-            iconName: ImageService.galleryMode ? "image" : (canGoBack ? "arrow_back" : "image")
+            readonly property bool canGoBack: !ImageService.galleryMode
+            iconName: canGoBack ? "arrow_back" : "image"
             iconSize: 20
             buttonSize: 32
             enabled: canGoBack
-            iconColor: ImageService.galleryMode ? Theme.primary : Theme.surfaceText
+            iconColor: canGoBack ? Theme.surfaceText : Theme.primary
             tooltipText: canGoBack ? "Back to Gallery (Esc)" : ""
             tooltipSide: "bottom"
             onClicked: {
