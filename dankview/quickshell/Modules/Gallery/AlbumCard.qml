@@ -107,7 +107,7 @@ Item {
                 spacing: 6
 
                 DankIcon {
-                    visible: root.album && root.album.isFavorites
+                    visible: Boolean(root.album && root.album.isFavorites)
                     name: "favorite"
                     size: 16
                     color: Theme.error
