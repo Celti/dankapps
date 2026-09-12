@@ -65,8 +65,9 @@ Rectangle {
         // Center: Animated Image Play/Pause Control
         Rectangle {
             visible: ImageService.isAnimated
-            height: 30
-            width: playPauseRow.implicitWidth + 16
+            implicitHeight: 30
+            implicitWidth: playPauseRow.implicitWidth + 16
+            Layout.alignment: Qt.AlignVCenter
             radius: 15
             color: playPauseMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
 
@@ -102,8 +103,9 @@ Rectangle {
         // Center: Counter badge e.g. "3 / 12"
         Rectangle {
             visible: ImageService.fileList.length > 0
-            height: 28
-            width: counterText.implicitWidth + 18
+            implicitHeight: 28
+            implicitWidth: counterText.implicitWidth + 20
+            Layout.alignment: Qt.AlignVCenter
             radius: 14
             color: Theme.surfaceContainerHighest
 
@@ -121,8 +123,9 @@ Rectangle {
         // Zoom percentage badge
         Rectangle {
             visible: ImageService.currentFilePath !== ""
-            height: 30
-            width: zoomRow.implicitWidth + 16
+            implicitHeight: 30
+            implicitWidth: zoomRow.implicitWidth + 16
+            Layout.alignment: Qt.AlignVCenter
             radius: 15
             color: zoomMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
 
@@ -201,8 +204,9 @@ Rectangle {
 
 
         Rectangle {
-            width: 1
-            height: 20
+            implicitWidth: 1
+            implicitHeight: 20
+            Layout.alignment: Qt.AlignVCenter
             color: Theme.outlineVariant
             opacity: 0.4
         }
