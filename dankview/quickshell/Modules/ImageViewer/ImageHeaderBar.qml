@@ -165,6 +165,18 @@ Rectangle {
             onClicked: ImageService.openFileDialog()
         }
 
+        // Favorite / Like Image
+        DankActionButton {
+            visible: ImageService.currentFilePath !== "" && !ImageService.galleryMode
+            readonly property bool isFav: ImageService.isFavorite(ImageService.currentFilePath)
+            iconName: isFav ? "favorite" : "favorite_border"
+            iconSize: 19
+            iconColor: isFav ? Theme.error : Theme.surfaceText
+            tooltipText: isFav ? "Remove from Favorites (F)" : "Add to Favorites (F)"
+            tooltipSide: "bottom"
+            onClicked: ImageService.toggleFavorite(ImageService.currentFilePath)
+        }
+
         // Image Info / EXIF Inspector
         DankActionButton {
             visible: ImageService.currentFilePath !== "" && !ImageService.galleryMode

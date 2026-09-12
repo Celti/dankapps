@@ -8,7 +8,7 @@ Item {
     id: root
 
     readonly property var allAlbums: (ImageService.galleryData && ImageService.galleryData.albums) ? ImageService.galleryData.albums : []
-    readonly property var pinnedAlbums: allAlbums.filter(a => a.isPinned)
+    readonly property var pinnedAlbums: [ImageService.favoritesAlbum].concat(allAlbums.filter(a => a.isPinned))
     readonly property var customAlbums: allAlbums.filter(a => !a.isPinned)
 
     DankFlickable {

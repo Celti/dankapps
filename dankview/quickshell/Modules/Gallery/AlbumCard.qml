@@ -74,9 +74,10 @@ Item {
                         DankIcon {
                             anchors.centerIn: parent
                             visible: parent.imgPath === ""
-                            name: "image"
+                            name: (root.album && root.album.isFavorites) ? "favorite" : "image"
                             size: 24
-                            color: Theme.surfaceVariantText
+                            color: (root.album && root.album.isFavorites) ? Theme.error : Theme.surfaceVariantText
+                            opacity: (root.album && root.album.isFavorites) ? 0.6 : 1.0
                         }
                     }
                 }
@@ -101,14 +102,26 @@ Item {
             Layout.fillWidth: true
             spacing: 2
 
-            Text {
+            RowLayout {
                 Layout.fillWidth: true
-                text: root.album ? root.album.name : ""
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeSmall + 1
-                font.weight: Font.DemiBold
-                color: Theme.surfaceText
-                elide: Text.ElideRight
+                spacing: 6
+
+                DankIcon {
+                    visible: root.album && root.album.isFavorites
+                    name: "favorite"
+                    size: 16
+                    color: Theme.error
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    text: root.album ? root.album.name : ""
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeSmall + 1
+                    font.weight: Font.DemiBold
+                    color: Theme.surfaceText
+                    elide: Text.ElideRight
+                }
             }
 
             Text {

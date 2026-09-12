@@ -14,6 +14,21 @@ Item {
         const cat = ImageService.selectedCategory;
         if (!cat || cat === "All") return rawGroups;
 
+        if (cat === "Favorites") {
+            const result = [];
+            for (let i = 0; i < rawGroups.length; i++) {
+                const grp = rawGroups[i];
+                const imgs = grp.images.filter(img => ImageService.isFavorite(img.path));
+                if (imgs.length > 0) {
+                    result.push({
+                        dateGroup: grp.dateGroup,
+                        images: imgs
+                    });
+                }
+            }
+            return result;
+        }
+
         const result = [];
         for (let i = 0; i < rawGroups.length; i++) {
             const grp = rawGroups[i];
@@ -83,13 +98,13 @@ Item {
                     spacing: 12
                     DankIcon {
                         Layout.alignment: Qt.AlignHCenter
-                        name: "image_not_supported"
+                        name: ImageService.selectedCategory === "Favorites" ? "favorite_border" : "image_not_supported"
                         size: 40
-                        color: Theme.surfaceVariantText
+                        color: ImageService.selectedCategory === "Favorites" ? Theme.error : Theme.surfaceVariantText
                     }
                     Text {
                         Layout.alignment: Qt.AlignHCenter
-                        text: "No images found"
+                        text: ImageService.selectedCategory === "Favorites" ? "No favorite images yet" : "No images found"
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeMedium
                         font.weight: Font.DemiBold
@@ -97,7 +112,9 @@ Item {
                     }
                     Text {
                         Layout.alignment: Qt.AlignHCenter
-                        text: "Add images to your Pictures folder or choose another category"
+                        text: ImageService.selectedCategory === "Favorites"
+                            ? "Click the heart icon on any photo to add it to favorites"
+                            : "Add images to your Pictures folder or choose another category"
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText

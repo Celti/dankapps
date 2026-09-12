@@ -29,29 +29,50 @@ Item {
                 spacing: 8
 
                 Repeater {
-                    model: (ImageService.galleryData && ImageService.galleryData.categories) ? ImageService.galleryData.categories : ["All"]
+                    model: ImageService.galleryCategories
 
                     delegate: Rectangle {
                         readonly property bool isSelected: ImageService.selectedCategory === modelData
+                        readonly property bool isFavChip: modelData === "Favorites"
                         implicitHeight: 32
-                        implicitWidth: chipLabel.implicitWidth + 24
+                        implicitWidth: chipContent.implicitWidth + 24
                         radius: 8
                         color: isSelected
                             ? Theme.primaryContainer
                             : (chipMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh)
                         border.color: isSelected
-                            ? Theme.primary
+                            ? (isFavChip ? Theme.error : Theme.primary)
                             : Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.28)
                         border.width: 1
 
-                        Text {
-                            id: chipLabel
+                        RowLayout {
+                            id: chipContent
                             anchors.centerIn: parent
-                            text: modelData
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.weight: isSelected ? Font.DemiBold : Font.Medium
-                            color: isSelected ? Theme.primary : Theme.surfaceText
+                            spacing: 5
+
+                            DankIcon {
+                                visible: isFavChip
+                                name: "favorite"
+                                size: 14
+                                color: isFavChip ? Theme.error : (isSelected ? Theme.primary : Theme.surfaceText)
+                            }
+
+                            Text {
+                                text: modelData
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.weight: isSelected ? Font.DemiBold : Font.Medium
+                                color: isSelected ? Theme.primary : Theme.surfaceText
+                            }
+
+                            Text {
+                                visible: isFavChip && ImageService.favoriteCount > 0
+                                text: "(" + ImageService.favoriteCount + ")"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeSmall - 1
+                                font.weight: Font.Medium
+                                color: isSelected ? Theme.primary : Theme.surfaceVariantText
+                            }
                         }
 
                         MouseArea {

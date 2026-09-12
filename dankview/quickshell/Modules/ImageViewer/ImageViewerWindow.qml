@@ -156,8 +156,16 @@ FloatingWindow {
                 event.accepted = true;
                 break;
 
-            // View & Window Controls
             case Qt.Key_F:
+                if (event.modifiers & Qt.ControlModifier) {
+                    windowControls.tryToggleMaximize();
+                } else if (!ImageService.galleryMode && ImageService.currentFilePath !== "") {
+                    ImageService.toggleFavorite(ImageService.currentFilePath);
+                } else {
+                    windowControls.tryToggleMaximize();
+                }
+                event.accepted = true;
+                break;
             case Qt.Key_F11:
                 windowControls.tryToggleMaximize();
                 event.accepted = true;

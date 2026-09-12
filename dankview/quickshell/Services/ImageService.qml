@@ -54,6 +54,74 @@ Singleton {
     property bool isGalleryLoading: false
     property string previewThumbnail: ""
 
+    readonly property string favFilePath: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/dankview/favorites.json"
+
+    FileView {
+        id: favFileView
+        path: root.favFilePath
+        blockLoading: false
+        onLoaded: {
+            try {
+                const text = favFileView.text();
+                if (text) {
+                    const data = JSON.parse(text);
+                    if (data && typeof data === "object") {
+                        root.galleryFavorites = data;
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to parse favorites.json:", e);
+            }
+        }
+    }
+
+    Process {
+        id: saveFavProc
+        running: false
+        command: []
+    }
+
+    function saveFavorites() {
+        saveFavProc.command = [
+            "sh", "-c",
+            'mkdir -p "$(dirname "$1")" && printf "%s" "$2" > "$1"',
+            "saveFav",
+            favFilePath,
+            JSON.stringify(galleryFavorites, null, 2)
+        ];
+        saveFavProc.running = true;
+    }
+
+    readonly property var galleryCategories: {
+        const raw = (galleryData && galleryData.categories) ? galleryData.categories : ["All"];
+        const list = [];
+        for (let i = 0; i < raw.length; i++) {
+            list.push(raw[i]);
+            if (raw[i] === "All") {
+                list.push("Favorites");
+            }
+        }
+        if (list.indexOf("Favorites") === -1) {
+            list.push("Favorites");
+        }
+        return list;
+    }
+
+    readonly property var favoriteImages: {
+        if (!galleryData || !galleryData.allImages) return [];
+        return galleryData.allImages.filter(img => !!galleryFavorites[img.path]);
+    }
+    readonly property int favoriteCount: favoriteImages.length
+
+    readonly property var favoritesAlbum: ({
+        name: "Favorites",
+        path: "",
+        isPinned: true,
+        isFavorites: true,
+        totalCount: root.favoriteCount,
+        previews: root.favoriteImages.slice(0, 4).map(img => img.thumbnail || img.path)
+    })
+
     function toggleFavorite(filePath) {
         const favs = Object.assign({}, galleryFavorites);
         if (favs[filePath]) {
@@ -62,6 +130,7 @@ Singleton {
             favs[filePath] = true;
         }
         galleryFavorites = favs;
+        saveFavorites();
     }
 
     function isFavorite(filePath) {
@@ -156,6 +225,7 @@ Singleton {
             }
         }
         galleryFavorites = favs;
+        saveFavorites();
         showToast(allFav ? "Removed from favorites" : `Added ${list.length} to favorites`);
     }
 
@@ -212,6 +282,19 @@ Singleton {
         command: []
         onExited: exitCode => {
             if (exitCode === 0) {
+                const list = root.gallerySelectedList;
+                let favChanged = false;
+                const favs = Object.assign({}, root.galleryFavorites);
+                for (let i = 0; i < list.length; i++) {
+                    if (favs[list[i]]) {
+                        delete favs[list[i]];
+                        favChanged = true;
+                    }
+                }
+                if (favChanged) {
+                    root.galleryFavorites = favs;
+                    root.saveFavorites();
+                }
                 root.showToast(`Moved ${root.gallerySelectedList.length} to trash`);
                 root.clearSelection();
                 root.loadGallery();
@@ -801,6 +884,12 @@ Singleton {
     function moveToTrash() {
         if (!currentFilePath) return;
         lastTrashedPath = currentFilePath;
+        if (galleryFavorites[currentFilePath]) {
+            const favs = Object.assign({}, galleryFavorites);
+            delete favs[currentFilePath];
+            galleryFavorites = favs;
+            saveFavorites();
+        }
         trashProc.command = ["gio", "trash", currentFilePath];
         trashProc.running = true;
     }
