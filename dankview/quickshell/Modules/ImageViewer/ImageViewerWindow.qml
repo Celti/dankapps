@@ -471,8 +471,8 @@ FloatingWindow {
                 scale: shouldShow ? (fabMouse.pressed ? 0.94 : (fabMouse.containsMouse ? 1.06 : 1.0)) : 0.8
 
                 color: fabMouse.pressed
-                    ? Qt.darker(Theme.primaryContainer, 1.15)
-                    : (fabMouse.containsMouse ? Qt.lighter(Theme.primaryContainer, 1.08) : Theme.primaryContainer)
+                    ? Qt.darker(Theme.primary, 1.15)
+                    : (fabMouse.containsMouse ? Qt.lighter(Theme.primary, 1.08) : Theme.primary)
 
                 border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
                 border.width: 1
@@ -485,13 +485,13 @@ FloatingWindow {
                     anchors.centerIn: parent
                     name: "edit"
                     size: 24
-                    color: Theme.onPrimaryContainer || Theme.primaryText
+                    color: Theme.onPrimary || Theme.primaryText
                 }
 
                 StateLayer {
                     id: fabMouse
                     cornerRadius: 16
-                    stateColor: Theme.primary
+                    stateColor: Theme.onPrimary || Theme.primaryText
                     tooltipText: "Edit (E)"
                     tooltipSide: "left"
                     onClicked: ImageService.toggleEditMode()
