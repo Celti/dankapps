@@ -165,6 +165,17 @@ Rectangle {
             onClicked: ImageService.openFileDialog()
         }
 
+        // Image Info / EXIF Inspector
+        DankActionButton {
+            visible: ImageService.currentFilePath !== "" && !ImageService.galleryMode
+            iconName: "info"
+            iconSize: 19
+            iconColor: ImageService.inspectorOpen ? Theme.primary : Theme.surfaceText
+            tooltipText: "Image Info / EXIF (I)"
+            tooltipSide: "bottom"
+            onClicked: ImageService.toggleInspector()
+        }
+
         // Lock UI / Zen View
         DankActionButton {
             visible: ImageService.currentFilePath !== ""

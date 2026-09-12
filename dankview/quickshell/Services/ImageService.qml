@@ -36,6 +36,7 @@ Singleton {
     property int currentFrame: 0
     property int frameCount: 1
     property bool inspectorOpen: false
+    property bool editMode: false
     property bool cropMode: false
     property bool saveMode: false
     property bool isFullscreen: Quickshell.env("DVIEW_FULLSCREEN") === "1"
@@ -238,6 +239,8 @@ Singleton {
 
     function backToGallery() {
         galleryMode = true;
+        editMode = false;
+        cropMode = false;
         previewThumbnail = "";
         loadGallery();
     }
@@ -288,6 +291,8 @@ Singleton {
 
     onCurrentFilePathChanged: {
         resetTransform();
+        editMode = false;
+        cropMode = false;
         if (currentFilePath) {
             galleryMode = false;
             fetchMetadata();
@@ -577,6 +582,11 @@ Singleton {
 
     function toggleInspector() {
         inspectorOpen = !inspectorOpen;
+        if (inspectorOpen) {
+            editMode = false;
+            cropMode = false;
+            saveMode = false;
+        }
     }
 
     function toggleFullscreen() {
@@ -587,6 +597,7 @@ Singleton {
         uiLocked = !uiLocked;
         if (uiLocked) {
             inspectorOpen = false;
+            editMode = false;
             cropMode = false;
             saveMode = false;
         }
@@ -648,10 +659,23 @@ Singleton {
         printProc.running = true;
     }
 
+    function toggleEditMode() {
+        if (!currentFilePath) return;
+        editMode = !editMode;
+        if (!editMode && cropMode) {
+            cropMode = false;
+        }
+        if (editMode) {
+            inspectorOpen = false;
+            saveMode = false;
+        }
+    }
+
     function toggleCropMode() {
         if (!currentFilePath) return;
         cropMode = !cropMode;
         if (cropMode) {
+            editMode = true;
             saveMode = false;
             inspectorOpen = false;
         }
@@ -661,6 +685,7 @@ Singleton {
         if (!currentFilePath) return;
         saveMode = !saveMode;
         if (saveMode) {
+            editMode = false;
             cropMode = false;
             inspectorOpen = false;
         }

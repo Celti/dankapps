@@ -101,6 +101,10 @@ FloatingWindow {
                 ImageService.toggleCropMode();
                 event.accepted = true;
                 break;
+            case Qt.Key_E:
+                ImageService.toggleEditMode();
+                event.accepted = true;
+                break;
             case Qt.Key_S:
                 saveDialog.cropRegion = null;
                 ImageService.openSaveDialog();
@@ -174,6 +178,9 @@ FloatingWindow {
                 if (ImageService.cropMode && !cropOverlay.promptVisible) {
                     cropOverlay.applyCrop();
                     event.accepted = true;
+                } else if (ImageService.editMode) {
+                    ImageService.editMode = false;
+                    event.accepted = true;
                 }
                 break;
             case Qt.Key_Escape:
@@ -188,6 +195,9 @@ FloatingWindow {
                     event.accepted = true;
                 } else if (ImageService.cropMode) {
                     ImageService.cropMode = false;
+                    event.accepted = true;
+                } else if (ImageService.editMode) {
+                    ImageService.editMode = false;
                     event.accepted = true;
                 } else if (ImageService.saveMode) {
                     ImageService.saveMode = false;
@@ -244,20 +254,6 @@ FloatingWindow {
                 }
             }
 
-            // Action Islands Toolbar
-            ImageTopBar {
-                id: topBar
-                cropOverlay: cropOverlay
-                anchors.top: headerBar.bottom
-                anchors.topMargin: 8
-                anchors.left: parent.left
-                anchors.leftMargin: 16
-                anchors.right: parent.right
-                anchors.rightMargin: 16
-                visible: !ImageService.galleryMode && !ImageService.uiLocked && ImageService.currentFilePath !== "" && !ImageService.saveMode
-                z: 40
-            }
-
             // Gallery View (Shown when dankview opens without an image or when returned to gallery)
             GalleryView {
                 id: galleryView
@@ -274,7 +270,7 @@ FloatingWindow {
             // Main Image Canvas Container (Rounded Viewport with Checkerboard)
             Rectangle {
                 id: canvasContainer
-                anchors.top: topBar.bottom
+                anchors.top: headerBar.bottom
                 anchors.topMargin: 8
                 anchors.left: parent.left
                 anchors.leftMargin: 16
@@ -343,7 +339,7 @@ FloatingWindow {
                 color: bottomTabMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
                 border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.3)
                 border.width: 1
-                visible: !ImageService.galleryMode && !ImageService.uiLocked && ImageService.currentFilePath !== "" && !ImageService.inspectorOpen
+                visible: !ImageService.galleryMode && !ImageService.uiLocked && ImageService.currentFilePath !== "" && !ImageService.inspectorOpen && !ImageService.editMode && !ImageService.cropMode
                 z: 50
 
                 Behavior on color { ColorAnimation { duration: 100 } }
@@ -414,6 +410,91 @@ FloatingWindow {
                     onClicked: {
                         ImageService.toggleLockUI();
                     }
+                }
+            }
+
+            // Bottom Edit Toolbar (M3 Docked Tools)
+            ImageEditBar {
+                id: editBar
+                cropOverlay: cropOverlay
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 24
+                anchors.horizontalCenter: parent.horizontalCenter
+                z: 60
+
+                readonly property bool shouldShow: !ImageService.galleryMode &&
+                                                   !ImageService.uiLocked &&
+                                                   ImageService.currentFilePath !== "" &&
+                                                   (ImageService.editMode || ImageService.cropMode) &&
+                                                   !ImageService.saveMode
+
+                visible: opacity > 0
+                opacity: shouldShow ? 1.0 : 0.0
+                scale: shouldShow ? 1.0 : 0.92
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Theme.shortDuration
+                        easing.type: Theme.standardEasing
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: Theme.shortDuration
+                        easing.type: Theme.standardEasing
+                    }
+                }
+            }
+
+            // Material 3 Floating Action Button (FAB)
+            Rectangle {
+                id: editFab
+                anchors.right: parent.right
+                anchors.rightMargin: 28
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 28
+                width: 56
+                height: 56
+                radius: 16
+                z: 60
+
+                readonly property bool shouldShow: !ImageService.galleryMode &&
+                                                   !ImageService.uiLocked &&
+                                                   ImageService.currentFilePath !== "" &&
+                                                   !ImageService.editMode &&
+                                                   !ImageService.cropMode &&
+                                                   !ImageService.saveMode &&
+                                                   !ImageService.inspectorOpen
+
+                visible: opacity > 0
+                opacity: shouldShow ? 1.0 : 0.0
+                scale: shouldShow ? (fabMouse.pressed ? 0.94 : (fabMouse.containsMouse ? 1.06 : 1.0)) : 0.8
+
+                color: fabMouse.pressed
+                    ? Qt.darker(Theme.primaryContainer, 1.15)
+                    : (fabMouse.containsMouse ? Qt.lighter(Theme.primaryContainer, 1.08) : Theme.primaryContainer)
+
+                border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
+                border.width: 1
+
+                Behavior on opacity { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
+                Behavior on scale { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
+                Behavior on color { ColorAnimation { duration: 100 } }
+
+                DankIcon {
+                    anchors.centerIn: parent
+                    name: "edit"
+                    size: 24
+                    color: Theme.onPrimaryContainer || Theme.primaryText
+                }
+
+                StateLayer {
+                    id: fabMouse
+                    cornerRadius: 16
+                    stateColor: Theme.primary
+                    tooltipText: "Edit (E)"
+                    tooltipSide: "left"
+                    onClicked: ImageService.toggleEditMode()
                 }
             }
 
