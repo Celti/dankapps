@@ -66,6 +66,14 @@ Item {
         }
     }
 
+    function calcFitScale(imgW, imgH, vpW, vpH) {
+        if (imgW <= 0 || imgH <= 0 || vpW <= 0 || vpH <= 0)
+            return 1.0;
+        const scaleX = (vpW - 32) / imgW;
+        const scaleY = (vpH - 32) / imgH;
+        return Math.min(1.0, Math.min(scaleX, scaleY));
+    }
+
     Item {
         id: viewport
         anchors.fill: parent
@@ -111,13 +119,7 @@ Item {
                 width: implicitWidth > 0 ? implicitWidth * fitScale : 400
                 height: implicitHeight > 0 ? implicitHeight * fitScale : 300
 
-                readonly property real fitScale: {
-                    if (implicitWidth <= 0 || implicitHeight <= 0 || viewport.width <= 0 || viewport.height <= 0)
-                        return 1.0;
-                    const scaleX = (viewport.width - 32) / implicitWidth;
-                    const scaleY = (viewport.height - 32) / implicitHeight;
-                    return Math.min(1.0, Math.min(scaleX, scaleY));
-                }
+                readonly property real fitScale: root.calcFitScale(implicitWidth, implicitHeight, viewport.width, viewport.height)
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -161,13 +163,7 @@ Item {
                 }
 
                 // Scale up or down to fit viewport initially if needed
-                property real fitScale: {
-                    if (implicitWidth <= 0 || implicitHeight <= 0 || viewport.width <= 0 || viewport.height <= 0)
-                        return 1.0;
-                    const scaleX = (viewport.width - 32) / implicitWidth;
-                    const scaleY = (viewport.height - 32) / implicitHeight;
-                    return Math.min(1.0, Math.min(scaleX, scaleY));
-                }
+                property real fitScale: root.calcFitScale(implicitWidth, implicitHeight, viewport.width, viewport.height)
 
                 onFitScaleChanged: {
                     ImageService.fitScale = fitScale;

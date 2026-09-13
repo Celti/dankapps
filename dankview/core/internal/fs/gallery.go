@@ -106,6 +106,51 @@ type dsearchResult struct {
 	Hits []dsearchHit `json:"hits"`
 }
 
+func addGalleryImage(
+	path, absRoot, thumbDir, name string,
+	modTime time.Time,
+	today, yesterday time.Time,
+	albumMap map[string]*GalleryAlbum,
+	categorySet map[string]bool,
+) GalleryImage {
+	parentDir := filepath.Dir(path)
+	category := "Pictures"
+	if parentDir != absRoot {
+		category = filepath.Base(parentDir)
+		if _, exists := albumMap[parentDir]; !exists {
+			isPinned := strings.EqualFold(category, "Screenshots") || strings.EqualFold(category, "Wallpapers")
+			albumMap[parentDir] = &GalleryAlbum{
+				Name:     category,
+				Path:     parentDir,
+				IsPinned: isPinned,
+				Previews: []string{},
+			}
+		}
+	}
+
+	thumbPath := resolveXdgThumbnail(path, thumbDir)
+
+	img := GalleryImage{
+		Path:      path,
+		Thumbnail: thumbPath,
+		Name:      name,
+		ModTime:   modTime.Unix(),
+		DateGroup: computeDateGroup(modTime, today, yesterday),
+		Category:  category,
+	}
+
+	categorySet[category] = true
+
+	if alb, ok := albumMap[parentDir]; ok {
+		alb.TotalCount++
+		if len(alb.Previews) < 4 {
+			alb.Previews = append(alb.Previews, path)
+		}
+	}
+
+	return img
+}
+
 // tryScanWithDsearch attempts to query danksearch index for instant results.
 func tryScanWithDsearch(absRoot string, thumbDir string, today, yesterday time.Time) ([]GalleryImage, map[string]*GalleryAlbum, map[string]bool, bool) {
 	dsearchBin, err := exec.LookPath("dsearch")
@@ -146,41 +191,8 @@ func tryScanWithDsearch(absRoot string, thumbDir string, today, yesterday time.T
 			continue
 		}
 
-		parentDir := filepath.Dir(p)
-		category := "Pictures"
-		if parentDir != absRoot {
-			category = filepath.Base(parentDir)
-			if _, exists := albumMap[parentDir]; !exists {
-				isPinned := strings.EqualFold(category, "Screenshots") || strings.EqualFold(category, "Wallpapers")
-				albumMap[parentDir] = &GalleryAlbum{
-					Name:     category,
-					Path:     parentDir,
-					IsPinned: isPinned,
-					Previews: []string{},
-				}
-			}
-		}
-
-		thumbPath := resolveXdgThumbnail(p, thumbDir)
-
-		img := GalleryImage{
-			Path:      p,
-			Thumbnail: thumbPath,
-			Name:      fi.Name(),
-			ModTime:   fi.ModTime().Unix(),
-			DateGroup: computeDateGroup(fi.ModTime(), today, yesterday),
-			Category:  category,
-		}
-
+		img := addGalleryImage(p, absRoot, thumbDir, fi.Name(), fi.ModTime(), today, yesterday, albumMap, categorySet)
 		allImages = append(allImages, img)
-		categorySet[category] = true
-
-		if alb, ok := albumMap[parentDir]; ok {
-			alb.TotalCount++
-			if len(alb.Previews) < 4 {
-				alb.Previews = append(alb.Previews, p)
-			}
-		}
 	}
 
 	if len(allImages) == 0 {
@@ -263,34 +275,8 @@ func ScanGallery(rootDir string) (*GalleryData, error) {
 			return nil
 		}
 
-		parentDir := filepath.Dir(path)
-		category := "Pictures"
-		if parentDir != absRoot {
-			category = filepath.Base(parentDir)
-		}
-
-		thumbPath := resolveXdgThumbnail(path, thumbDir)
-
-		img := GalleryImage{
-			Path:      path,
-			Thumbnail: thumbPath,
-			Name:      info.Name(),
-			ModTime:   info.ModTime().Unix(),
-			DateGroup: computeDateGroup(info.ModTime(), today, yesterday),
-			Category:  category,
-		}
-
+		img := addGalleryImage(path, absRoot, thumbDir, info.Name(), info.ModTime(), today, yesterday, albumMap, categorySet)
 		allImages = append(allImages, img)
-		categorySet[category] = true
-
-		// Add to album previews
-		if alb, ok := albumMap[parentDir]; ok {
-			alb.TotalCount++
-			if len(alb.Previews) < 4 {
-				alb.Previews = append(alb.Previews, path)
-			}
-		}
-
 		return nil
 	})
 	}

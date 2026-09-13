@@ -53,81 +53,48 @@ Rectangle {
             }
         }
 
-        // Gallery Tab Button
-        Rectangle {
-            id: galleryTabBtn
-            readonly property bool isActive: ImageService.galleryTab === "gallery"
-            implicitHeight: 38
-            implicitWidth: 110
-            radius: 19
-            color: isActive ? Theme.primaryContainer : (gMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent")
+        Repeater {
+            model: [
+                { id: "gallery", label: "Gallery", icon: "photo_library" },
+                { id: "albums",  label: "Albums",  icon: "collections_bookmark" }
+            ]
 
-            Behavior on color { ColorAnimation { duration: 120 } }
+            delegate: Rectangle {
+                id: tabBtn
+                readonly property bool isActive: ImageService.galleryTab === modelData.id
+                implicitHeight: 38
+                implicitWidth: 110
+                radius: 19
+                color: isActive ? Theme.primaryContainer : (tabMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent")
 
-            RowLayout {
-                anchors.centerIn: parent
-                spacing: 6
+                Behavior on color { ColorAnimation { duration: 120 } }
 
-                DankIcon {
-                    name: "photo_library"
-                    size: 20
-                    color: galleryTabBtn.isActive ? Theme.primary : Theme.surfaceText
+                RowLayout {
+                    anchors.centerIn: parent
+                    spacing: 6
+
+                    DankIcon {
+                        name: modelData.icon
+                        size: 20
+                        color: tabBtn.isActive ? Theme.primary : Theme.surfaceText
+                    }
+
+                    Text {
+                        text: modelData.label
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeSmall + 1
+                        font.weight: tabBtn.isActive ? Font.DemiBold : Font.Normal
+                        color: tabBtn.isActive ? Theme.primary : Theme.surfaceText
+                    }
                 }
 
-                Text {
-                    text: "Gallery"
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeSmall + 1
-                    font.weight: galleryTabBtn.isActive ? Font.DemiBold : Font.Normal
-                    color: galleryTabBtn.isActive ? Theme.primary : Theme.surfaceText
+                MouseArea {
+                    id: tabMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: ImageService.galleryTab = modelData.id
                 }
-            }
-
-            MouseArea {
-                id: gMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: ImageService.galleryTab = "gallery"
-            }
-        }
-
-        // Albums Tab Button
-        Rectangle {
-            id: albumsTabBtn
-            readonly property bool isActive: ImageService.galleryTab === "albums"
-            implicitHeight: 38
-            implicitWidth: 110
-            radius: 19
-            color: isActive ? Theme.primaryContainer : (aMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent")
-
-            Behavior on color { ColorAnimation { duration: 120 } }
-
-            RowLayout {
-                anchors.centerIn: parent
-                spacing: 6
-
-                DankIcon {
-                    name: "collections_bookmark"
-                    size: 20
-                    color: albumsTabBtn.isActive ? Theme.primary : Theme.surfaceText
-                }
-
-                Text {
-                    text: "Albums"
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeSmall + 1
-                    font.weight: albumsTabBtn.isActive ? Font.DemiBold : Font.Normal
-                    color: albumsTabBtn.isActive ? Theme.primary : Theme.surfaceText
-                }
-            }
-
-            MouseArea {
-                id: aMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: ImageService.galleryTab = "albums"
             }
         }
     }

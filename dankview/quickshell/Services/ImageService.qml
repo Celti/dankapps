@@ -54,7 +54,7 @@ Singleton {
     property bool isGalleryLoading: false
     property string previewThumbnail: ""
 
-    readonly property string favFilePath: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/dankview/favorites.json"
+    readonly property string favFilePath: SettingsData.configDir + "/favorites.json"
 
     FileView {
         id: favFileView
@@ -135,6 +135,22 @@ Singleton {
 
     function isFavorite(filePath) {
         return !!galleryFavorites[filePath];
+    }
+
+    function removeFavorites(paths) {
+        if (!paths || paths.length === 0) return;
+        const favs = Object.assign({}, galleryFavorites);
+        let changed = false;
+        for (let i = 0; i < paths.length; i++) {
+            if (favs[paths[i]]) {
+                delete favs[paths[i]];
+                changed = true;
+            }
+        }
+        if (changed) {
+            galleryFavorites = favs;
+            saveFavorites();
+        }
     }
 
     function toggleSelect(filePath) {
@@ -229,30 +245,47 @@ Singleton {
         showToast(allFav ? "Removed from favorites" : `Added ${list.length} to favorites`);
     }
 
+    readonly property var mimeTypes: ({
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "webp": "image/webp",
+        "svg": "image/svg+xml",
+        "gif": "image/gif",
+        "bmp": "image/bmp",
+        "avif": "image/avif",
+        "heic": "image/heic",
+        "heif": "image/heif",
+        "jxl": "image/jxl",
+        "tif": "image/tiff",
+        "tiff": "image/tiff",
+        "ico": "image/x-icon"
+    })
+
+    function getMimeType(filePath) {
+        if (!filePath) return "image/png";
+        const lastDot = filePath.lastIndexOf(".");
+        const ext = lastDot > 0 ? filePath.substring(lastDot + 1).toLowerCase() : "";
+        return mimeTypes[ext] || "image/png";
+    }
+
+    function copySingleImageToClipboard(filePath) {
+        if (!filePath) return;
+        copyProc.command = [
+            "sh", "-c",
+            'exec dms cl copy -t "$1" < "$2"',
+            "copyProc",
+            getMimeType(filePath),
+            filePath
+        ];
+        copyProc.running = true;
+    }
+
     function copySelectedFiles() {
         const list = gallerySelectedList;
         if (list.length === 0) return;
         if (list.length === 1) {
-            const filePath = list[0];
-            const mimeTypes = {
-                "png": "image/png",
-                "jpg": "image/jpeg",
-                "jpeg": "image/jpeg",
-                "webp": "image/webp",
-                "svg": "image/svg+xml",
-                "gif": "image/gif"
-            };
-            const lastDot = filePath.lastIndexOf(".");
-            const ext = lastDot > 0 ? filePath.substring(lastDot + 1).toLowerCase() : "";
-            const mime = mimeTypes[ext] || "image/png";
-            copyProc.command = [
-                "sh", "-c",
-                'exec dms cl copy -t "$1" < "$2"',
-                "copyProc",
-                mime,
-                filePath
-            ];
-            copyProc.running = true;
+            copySingleImageToClipboard(list[0]);
         } else {
             // Copy list of paths separated by newline
             copyPathProc.command = ["dms", "cl", "copy", list.join("\n")];
@@ -282,19 +315,7 @@ Singleton {
         command: []
         onExited: exitCode => {
             if (exitCode === 0) {
-                const list = root.gallerySelectedList;
-                let favChanged = false;
-                const favs = Object.assign({}, root.galleryFavorites);
-                for (let i = 0; i < list.length; i++) {
-                    if (favs[list[i]]) {
-                        delete favs[list[i]];
-                        favChanged = true;
-                    }
-                }
-                if (favChanged) {
-                    root.galleryFavorites = favs;
-                    root.saveFavorites();
-                }
+                root.removeFavorites(root.gallerySelectedList);
                 root.showToast(`Moved ${root.gallerySelectedList.length} to trash`);
                 root.clearSelection();
                 root.loadGallery();
@@ -666,13 +687,18 @@ Singleton {
         resettingTransform = false;
     }
 
-    function toggleInspector() {
-        inspectorOpen = !inspectorOpen;
-        if (inspectorOpen) {
+    function closeOtherOverlays(except) {
+        if (except !== "inspector") inspectorOpen = false;
+        if (except !== "edit" && except !== "crop") {
             editMode = false;
             cropMode = false;
-            saveMode = false;
         }
+        if (except !== "save") saveMode = false;
+    }
+
+    function toggleInspector() {
+        inspectorOpen = !inspectorOpen;
+        if (inspectorOpen) closeOtherOverlays("inspector");
     }
 
     function toggleFullscreen() {
@@ -681,44 +707,12 @@ Singleton {
 
     function toggleLockUI() {
         uiLocked = !uiLocked;
-        if (uiLocked) {
-            inspectorOpen = false;
-            editMode = false;
-            cropMode = false;
-            saveMode = false;
-        }
+        if (uiLocked) closeOtherOverlays("none");
     }
 
     function copyToClipboard() {
         if (!currentFilePath) return;
-        const mimeTypes = {
-            "png": "image/png",
-            "jpg": "image/jpeg",
-            "jpeg": "image/jpeg",
-            "webp": "image/webp",
-            "svg": "image/svg+xml",
-            "gif": "image/gif",
-            "bmp": "image/bmp",
-            "avif": "image/avif",
-            "heic": "image/heic",
-            "heif": "image/heif",
-            "jxl": "image/jxl",
-            "tif": "image/tiff",
-            "tiff": "image/tiff",
-            "ico": "image/x-icon"
-        };
-        const lastDot = currentFilePath.lastIndexOf(".");
-        const ext = lastDot > 0 ? currentFilePath.substring(lastDot + 1).toLowerCase() : "";
-        const mime = mimeTypes[ext] || "image/png";
-
-        copyProc.command = [
-            "sh", "-c",
-            'exec dms cl copy -t "$1" < "$2"',
-            "copyProc",
-            mime,
-            currentFilePath
-        ];
-        copyProc.running = true;
+        copySingleImageToClipboard(currentFilePath);
     }
 
     function copyPathToClipboard() {
@@ -751,10 +745,7 @@ Singleton {
         if (!editMode && cropMode) {
             cropMode = false;
         }
-        if (editMode) {
-            inspectorOpen = false;
-            saveMode = false;
-        }
+        if (editMode) closeOtherOverlays("edit");
     }
 
     function toggleCropMode() {
@@ -762,19 +753,14 @@ Singleton {
         cropMode = !cropMode;
         if (cropMode) {
             editMode = true;
-            saveMode = false;
-            inspectorOpen = false;
+            closeOtherOverlays("crop");
         }
     }
 
     function openSaveDialog() {
         if (!currentFilePath) return;
         saveMode = !saveMode;
-        if (saveMode) {
-            editMode = false;
-            cropMode = false;
-            inspectorOpen = false;
-        }
+        if (saveMode) closeOtherOverlays("save");
     }
 
     property int reloadToken: 0
@@ -884,12 +870,7 @@ Singleton {
     function moveToTrash() {
         if (!currentFilePath) return;
         lastTrashedPath = currentFilePath;
-        if (galleryFavorites[currentFilePath]) {
-            const favs = Object.assign({}, galleryFavorites);
-            delete favs[currentFilePath];
-            galleryFavorites = favs;
-            saveFavorites();
-        }
+        removeFavorites([currentFilePath]);
         trashProc.command = ["gio", "trash", currentFilePath];
         trashProc.running = true;
     }
