@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Window
 import qs.DankCommon.Widgets
 import "ScrollConstants.js" as Scroll
 
@@ -8,8 +9,10 @@ Flickable {
 
     property alias verticalScrollBar: vbar
     property real mouseWheelSpeed: Scroll.mouseWheelSpeed
+    property bool wheelEnabled: true
     property real momentumVelocity: 0
     property bool isMomentumActive: false
+    readonly property bool windowVisible: flickable.Window.window?.visible ?? false
     property real friction: Scroll.friction
     property bool _scrollBarActive: false
 
@@ -22,6 +25,7 @@ Flickable {
 
     WheelHandler {
         id: wheelHandler
+        enabled: flickable.wheelEnabled
 
         property real touchpadSpeed: Scroll.touchpadSpeed
         property real momentumRetention: Scroll.momentumRetention
@@ -31,6 +35,8 @@ Flickable {
         property bool sessionUsedMouseWheel: false
 
         function startMomentum() {
+            if (!flickable.visible || !flickable.Window.window?.visible)
+                return;
             flickable.isMomentumActive = true;
             momentumAnim.running = true;
         }
@@ -144,6 +150,25 @@ Flickable {
         vbar.hideTimer.stop();
     }
     onMovementEnded: vbar.hideTimer.restart()
+
+    function stopMomentum() {
+        cancelFlick();
+        momentumAnim.running = false;
+        isMomentumActive = false;
+        momentumVelocity = 0;
+        wheelHandler.momentum = 0;
+        wheelHandler.velocitySamples = [];
+    }
+
+    onVisibleChanged: {
+        if (!visible)
+            stopMomentum();
+    }
+
+    onWindowVisibleChanged: {
+        if (!windowVisible)
+            stopMomentum();
+    }
 
     FrameAnimation {
         id: momentumAnim

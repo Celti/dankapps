@@ -1,22 +1,11 @@
 import QtQuick
 import qs.DankCommon.Common
-import qs.DankCommon.Widgets
 
 StyledRect {
     id: root
 
     LayoutMirroring.enabled: I18n.isRtl
     LayoutMirroring.childrenInherit: true
-
-    function checkParentDisablesTransparency() {
-        let p = parent;
-        while (p) {
-            if (p.disablePopupTransparency === true)
-                return true;
-            p = p.parent;
-        }
-        return false;
-    }
 
     property alias text: textEdit.text
     property alias cursorPosition: textEdit.cursorPosition
@@ -27,17 +16,17 @@ StyledRect {
     property string placeholderText: ""
     property string leftIconName: ""
     property int leftIconSize: Style.iconSize
-    property color leftIconColor: Style.surfaceVariantText
+    property color leftIconColor: Style.onSurfaceVariant
     property color leftIconFocusedColor: Style.primary
-    property bool usePopupTransparency: !checkParentDisablesTransparency()
-    property color backgroundColor: usePopupTransparency ? Style.popupFieldColor : Style.floatingWindowFieldColor
-    property color focusedBorderColor: usePopupTransparency ? Style.popupFieldFocusedBorderColor : Style.floatingWindowFieldFocusedBorderColor
-    property color normalBorderColor: usePopupTransparency ? Style.popupFieldBorderColor : Style.floatingWindowFieldBorderColor
-    property color placeholderColor: Style.outlineButton
+    property bool usePopupTransparency: !Style.isFloatingWindow(root)
+    property color backgroundColor: Style.surfaceContainerHigh
+    property color focusedBorderColor: Style.primary
+    property color normalBorderColor: Style.outlineVariant
+    property color placeholderColor: Style.onSurfaceVariant
     property bool hidePlaceholderOnFocus: true
-    property real borderWidth: 1
-    property real focusedBorderWidth: 2
-    property real cornerRadius: Style.cornerRadius
+    property real borderWidth: Style.outlineWidth
+    property real focusedBorderWidth: Style.outlineWidthFocused
+    property real cornerRadius: Style.cornerRadiusXS
     property real topPadding: Style.spacingS
     property real bottomPadding: Style.spacingS
     property var keyForwardTargets: []
@@ -67,10 +56,10 @@ StyledRect {
         textEdit.insert(textEdit.cursorPosition, str);
     }
 
-    width: 200
-    height: Math.round(Style.fontSizeMedium * 8)
+    width: Style.fieldDefaultWidth
+    height: Style.textEditHeight
     radius: cornerRadius
-    color: backgroundColor
+    color: Style.foregroundColor(backgroundColor, !usePopupTransparency)
     border.color: textEdit.activeFocus ? focusedBorderColor : normalBorderColor
     border.width: textEdit.activeFocus ? focusedBorderWidth : borderWidth
 
@@ -117,13 +106,18 @@ StyledRect {
         TextEdit {
             id: textEdit
 
+            activeFocusOnTab: root.enabled
+            Accessible.name: root.Accessible.name || root.placeholderText
+            Accessible.description: root.Accessible.description
+
             width: scroll.width
             height: Math.max(scroll.height, contentHeight)
             font.pixelSize: Style.fontSizeMedium
             font.family: Style.fontFamily
+            font.weight: Style.fontWeight
             color: Style.surfaceText
             selectionColor: Style.primaryContainer
-            selectedTextColor: Style.primary
+            selectedTextColor: Style.onPrimaryContainer
             wrapMode: TextEdit.Wrap
             selectByMouse: true
             cursorDelegate: DankTextCursor {
@@ -135,17 +129,11 @@ StyledRect {
                 height: textEdit.cursorRectangle.height
                 shown: textEdit.cursorVisible
 
-                Connections {
-                    target: textEdit
+                readonly property int editCursorPosition: textEdit.cursorPosition
+                readonly property string editText: textEdit.text
 
-                    function onCursorPositionChanged() {
-                        editCursor.resetBlink();
-                    }
-
-                    function onTextChanged() {
-                        editCursor.resetBlink();
-                    }
-                }
+                onEditCursorPositionChanged: resetBlink()
+                onEditTextChanged: resetBlink()
             }
             onTextChanged: root.textEdited()
             onEditingFinished: root.editingFinished()
@@ -174,16 +162,18 @@ StyledRect {
     }
 
     Behavior on border.color {
-        ColorAnimation {
-            duration: Style.shortDuration
-            easing.type: Style.standardEasing
+        enabled: Style.currentAnimationSpeed !== Style.AnimationSpeed.None
+        DankColorAnim {
+            duration: Style.expressiveDurations.expressiveEffects
+            easing.bezierCurve: Style.expressiveCurves.expressiveEffects
         }
     }
 
     Behavior on border.width {
-        NumberAnimation {
-            duration: Style.shortDuration
-            easing.type: Style.standardEasing
+        enabled: Style.currentAnimationSpeed !== Style.AnimationSpeed.None
+        DankAnim {
+            duration: Style.expressiveDurations.expressiveEffects
+            easing.bezierCurve: Style.expressiveCurves.expressiveEffects
         }
     }
 }

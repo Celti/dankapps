@@ -2,6 +2,8 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "Shape.js" as Shape
+import "Surface.js" as Surface
 import Quickshell
 
 Singleton {
@@ -35,6 +37,8 @@ Singleton {
     readonly property bool isLightMode: theme?.isLightMode ?? false
 
     readonly property color primary: theme?.primary ?? "#D0BCFF"
+    readonly property color contrastDark: theme?.contrastDark ?? "#000000"
+    readonly property color contrastLight: theme?.contrastLight ?? "#ffffff"
     readonly property color primaryText: theme?.primaryText ?? "#381E72"
     readonly property color primaryContainer: theme?.primaryContainer ?? "#4F378B"
     readonly property color secondary: theme?.secondary ?? "#CCC2DC"
@@ -48,6 +52,7 @@ Singleton {
     readonly property color surfaceContainer: theme?.surfaceContainer ?? "#211f24"
     readonly property color surfaceContainerHigh: theme?.surfaceContainerHigh ?? "#2b292f"
     readonly property color error: theme?.error ?? "#F2B8B5"
+    readonly property color errorContainer: theme?.errorContainer ?? surfaceContainerHigh
     readonly property color warning: theme?.warning ?? "#FF9800"
     readonly property color tertiary: theme?.tertiary ?? "#EFB8C8"
     readonly property color surfaceContainerLowest: theme?.surfaceContainerLowest ?? "#0f0d13"
@@ -67,11 +72,17 @@ Singleton {
     property color onSurfaceVariant
     property color onPrimaryContainer
     property color onSecondaryContainer
+    property color onErrorContainer
     property color onTertiaryContainer
     readonly property color onSurface_12: theme?.onSurface_12 ?? withAlpha(onSurface, 0.12)
     readonly property color onSurface_38: theme?.onSurface_38 ?? withAlpha(onSurface, 0.38)
     readonly property color onSurfaceVariant_30: theme?.onSurfaceVariant_30 ?? withAlpha(onSurfaceVariant, 0.3)
     readonly property list<QtObject> roleBindings: [
+        Binding {
+            target: root
+            property: "onErrorContainer"
+            value: root.theme?.onErrorContainer ?? root.onSurface
+        },
         Binding {
             target: root
             property: "onSurface"
@@ -127,15 +138,26 @@ Singleton {
     readonly property color errorHover: theme?.errorHover ?? withAlpha(error, 0.12)
     readonly property color errorSelected: theme?.errorSelected ?? withAlpha(error, 0.3)
 
+    readonly property real foregroundAlpha: theme?.foregroundAlpha ?? Surface.foregroundAlpha(theme?.foregroundLayers ?? true, theme?.foregroundLayerTransparency ?? 1)
+    readonly property real floatingWindowForegroundAlpha: theme?.floatingWindowForegroundAlpha ?? Surface.foregroundAlpha(theme?.floatingWindowForegroundLayers ?? theme?.foregroundLayers ?? true, theme?.floatingWindowForegroundTransparency ?? theme?.foregroundLayerTransparency ?? 1)
+
+    function isFloatingWindow(item) {
+        return Surface.isFloatingWindow(item);
+    }
+
+    function foregroundColor(baseColor, floatingWindow = false) {
+        return blendAlpha(baseColor, floatingWindow ? floatingWindowForegroundAlpha : foregroundAlpha);
+    }
+
     readonly property color floatingSurface: theme?.floatingSurface ?? withAlpha(surfaceContainer, popupTransparency)
-    readonly property color nestedSurface: theme?.nestedSurface ?? withAlpha(surfaceContainerHigh, popupTransparency)
+    readonly property color nestedSurface: theme?.nestedSurface ?? foregroundColor(surfaceContainerHigh)
     readonly property real floatingWindowTransparency: theme?.floatingWindowTransparency ?? popupTransparency
     readonly property color floatingWindowSurface: theme?.floatingWindowSurface ?? withAlpha(surfaceContainer, floatingWindowTransparency)
-    readonly property color floatingWindowNestedSurface: theme?.floatingWindowNestedSurface ?? nestedSurface
-    readonly property color floatingWindowFieldColor: theme?.floatingWindowFieldColor ?? withAlpha(surfaceContainerHigh, floatingWindowTransparency)
+    readonly property color floatingWindowNestedSurface: theme?.floatingWindowNestedSurface ?? foregroundColor(surfaceContainerHigh, true)
+    readonly property color floatingWindowFieldColor: theme?.floatingWindowFieldColor ?? foregroundColor(surfaceContainerHigh, true)
     readonly property color floatingWindowFieldBorderColor: theme?.floatingWindowFieldBorderColor ?? withAlpha(outline, 0.16)
     readonly property color floatingWindowFieldFocusedBorderColor: theme?.floatingWindowFieldFocusedBorderColor ?? primary
-    readonly property color popupFieldColor: theme?.popupFieldColor ?? withAlpha(surfaceContainerHigh, popupTransparency)
+    readonly property color popupFieldColor: theme?.popupFieldColor ?? foregroundColor(surfaceContainerHigh)
     readonly property color popupFieldBorderColor: theme?.popupFieldBorderColor ?? withAlpha(outline, 0.16)
     readonly property color popupFieldFocusedBorderColor: theme?.popupFieldFocusedBorderColor ?? primary
     readonly property color shadowStrong: theme?.shadowStrong ?? Qt.rgba(0, 0, 0, 0.3)
@@ -149,17 +171,38 @@ Singleton {
     readonly property int smallBreakpoint: theme?.smallBreakpoint ?? 480
     readonly property int mediumBreakpoint: theme?.mediumBreakpoint ?? 768
 
-    readonly property real cornerRadius: theme?.cornerRadius ?? 12
-    readonly property real shapeScale: theme?.shapeScale ?? Math.max(0, Math.min(cornerRadius / 16, 1.5))
-    readonly property real cornerRadiusXS: theme?.cornerRadiusXS ?? Math.round(4 * shapeScale)
-    readonly property real cornerRadiusS: theme?.cornerRadiusS ?? Math.round(8 * shapeScale)
-    readonly property real cornerRadiusM: theme?.cornerRadiusM ?? Math.round(12 * shapeScale)
-    readonly property real cornerRadiusL: theme?.cornerRadiusL ?? cornerRadius
-    readonly property real cornerRadiusXL: theme?.cornerRadiusXL ?? Math.round(28 * shapeScale)
-    readonly property real cornerRadiusXXL: theme?.cornerRadiusXXL ?? Math.round(48 * shapeScale)
-    readonly property real cornerRadiusFull: theme?.cornerRadiusFull ?? 9999
+    readonly property real radiusStrength: theme?.radiusStrength ?? Shape.strengthFromRadius(theme?.cornerRadius ?? 12)
+    readonly property real shapeScale: theme?.radiusStrength !== undefined ? Shape.scaleForStrength(radiusStrength) : (theme?.shapeScale ?? Shape.scaleForStrength(radiusStrength))
+    readonly property real cornerRadius: cornerRadiusM
+    readonly property real cornerRadiusXXS: theme?.cornerRadiusXXS ?? Shape.radius("xxs", shapeScale)
+    readonly property real cornerRadiusXS: theme?.cornerRadiusXS ?? Shape.radius("xs", shapeScale)
+    readonly property real cornerRadiusS: theme?.cornerRadiusS ?? Shape.radius("s", shapeScale)
+    readonly property real cornerRadiusM: theme?.cornerRadiusM ?? Shape.radius("m", shapeScale)
+    readonly property real cornerRadiusL: theme?.cornerRadiusL ?? Shape.radius("l", shapeScale)
+    readonly property real cornerRadiusLIncreased: theme?.cornerRadiusLIncreased ?? Shape.radius("lIncreased", shapeScale)
+    readonly property real cornerRadiusXL: theme?.cornerRadiusXL ?? Shape.radius("xl", shapeScale)
+    readonly property real cornerRadiusXLIncreased: theme?.cornerRadiusXLIncreased ?? Shape.radius("xlIncreased", shapeScale)
+    readonly property real cornerRadiusXXL: theme?.cornerRadiusXXL ?? Shape.radius("xxl", shapeScale)
+    readonly property real cornerRadiusFull: shapeScale > 0 ? (theme?.cornerRadiusFull ?? 9999) : 0
     readonly property real cornerRadiusSmall: cornerRadiusS
     readonly property real cornerRadiusLarge: cornerRadiusL
+    readonly property real windowRadius: theme?.windowRadius ?? cornerRadiusL
+
+    function scaledRadius(radius, limit) {
+        return Shape.scaledRadius(radius, limit, shapeScale);
+    }
+
+    function fullRadius(width, height) {
+        return Shape.fullRadius(width, height, shapeScale);
+    }
+
+    function buttonRadius(width, height, sizeHeight, pressed, round) {
+        if (!pressed && round)
+            return fullRadius(width, height);
+        const token = Shape.buttonCorner(sizeHeight, pressed);
+        return root["cornerRadius" + token.toUpperCase()];
+    }
+
     readonly property real groupedListGap: theme?.groupedListGap ?? spacingXXS
     readonly property real groupedListInnerRadius: theme?.groupedListInnerRadius ?? cornerRadiusXS
     readonly property real groupedListOuterRadius: theme?.groupedListOuterRadius ?? cornerRadiusL
@@ -175,26 +218,39 @@ Singleton {
     readonly property real fontSizeXLarge: theme?.fontSizeXLarge ?? 20
     readonly property real fontSizeXXLarge: theme?.fontSizeXXLarge ?? 28
     readonly property real fontSizeDisplay: theme?.fontSizeDisplay ?? 36
+    readonly property real fontSizeDisplayLarge: theme?.fontSizeDisplayLarge ?? 57
     readonly property real iconSize: theme?.iconSize ?? 24
     readonly property real iconSizeSmall: theme?.iconSizeSmall ?? 16
     readonly property real iconSizeMedium: theme?.iconSizeMedium ?? 20
     readonly property real iconSizeLarge: theme?.iconSizeLarge ?? 32
     readonly property real iconButtonSize: theme?.iconButtonSize ?? 40
+    readonly property real minimumTouchTargetSize: theme?.minimumTouchTargetSize ?? 48
     readonly property real listItemHeight: theme?.listItemHeight ?? 56
     readonly property real listItemTwoLineHeight: theme?.listItemTwoLineHeight ?? 72
     readonly property real avatarSize: theme?.avatarSize ?? 36
+    readonly property real osdHeight: theme?.osdHeight ?? sliderHandleHeight + spacingS * 2
+    readonly property real dialogMaxWidth: theme?.dialogMaxWidth ?? 560
     readonly property real sliderTrackHeight: theme?.sliderTrackHeight ?? 16
     readonly property real sliderHandleWidth: theme?.sliderHandleWidth ?? 4
-    readonly property real sliderHandleHeight: theme?.sliderHandleHeight ?? 28
+    readonly property real sliderHandleWidthDesktop: theme?.sliderHandleWidthDesktop ?? 6
+    readonly property real sliderHandleWidthDesktopPressed: theme?.sliderHandleWidthDesktopPressed ?? 4
+    readonly property real sliderHandleHeightDesktop: theme?.sliderHandleHeightDesktop ?? 32
+    readonly property real sliderHandleHeight: theme?.sliderHandleHeight ?? 44
     readonly property real sliderHandleGap: theme?.sliderHandleGap ?? 6
-    readonly property real sliderTrackHeightS: theme?.sliderTrackHeightS ?? 20
-    readonly property real sliderHandleHeightS: theme?.sliderHandleHeightS ?? 32
-    readonly property real sliderTrackHeightM: theme?.sliderTrackHeightM ?? 32
+    readonly property real sliderTrackHeightS: theme?.sliderTrackHeightS ?? 24
+    readonly property real sliderHandleHeightS: theme?.sliderHandleHeightS ?? 44
+    readonly property real sliderTrackHeightM: theme?.sliderTrackHeightM ?? 40
     readonly property real sliderHandleHeightM: theme?.sliderHandleHeightM ?? 44
-    readonly property real sliderTrackHeightL: theme?.sliderTrackHeightL ?? 40
-    readonly property real sliderHandleHeightL: theme?.sliderHandleHeightL ?? 52
-    readonly property real sliderTrackHeightXL: theme?.sliderTrackHeightXL ?? 56
-    readonly property real sliderHandleHeightXL: theme?.sliderHandleHeightXL ?? 68
+    readonly property real sliderTrackHeightL: theme?.sliderTrackHeightL ?? 56
+    readonly property real sliderHandleHeightL: theme?.sliderHandleHeightL ?? 68
+    readonly property real sliderTrackHeightXL: theme?.sliderTrackHeightXL ?? 96
+    readonly property real sliderHandleHeightXL: theme?.sliderHandleHeightXL ?? 108
+    readonly property real sliderTrackCornerRadius: theme?.sliderTrackCornerRadius ?? 8
+    readonly property real sliderTrackCornerRadiusS: theme?.sliderTrackCornerRadiusS ?? 8
+    readonly property real sliderTrackCornerRadiusM: theme?.sliderTrackCornerRadiusM ?? 12
+    readonly property real sliderTrackCornerRadiusL: theme?.sliderTrackCornerRadiusL ?? 16
+    readonly property real sliderTrackCornerRadiusXL: theme?.sliderTrackCornerRadiusXL ?? 28
+    readonly property real sliderTrackInsideCornerRadius: theme?.sliderTrackInsideCornerRadius ?? 2
     readonly property real switchTrackWidth: theme?.switchTrackWidth ?? 52
     readonly property real switchTrackHeight: theme?.switchTrackHeight ?? 32
     readonly property real switchOutlineWidth: theme?.switchOutlineWidth ?? 2
@@ -210,7 +266,14 @@ Singleton {
     readonly property real focusRingWidth: theme?.focusRingWidth ?? 2
     readonly property real focusRingOffset: theme?.focusRingOffset ?? 4
     readonly property color focusRingColor: theme?.focusRingColor ?? primary
+    readonly property color lockScreenContentColor: theme?.lockScreenContentColor ?? "#ffffff"
+    readonly property real lockScreenScrimAlpha: theme?.lockScreenScrimAlpha ?? 0.4
+    readonly property real lockScreenBlur: theme?.lockScreenBlur ?? 0.8
+    readonly property int lockScreenBlurMax: theme?.lockScreenBlurMax ?? 32
+    readonly property color screenOffColor: theme?.screenOffColor ?? "#000000"
     readonly property real scrimAlpha: theme?.scrimAlpha ?? 0.55
+    readonly property color scrimColor: theme?.scrimColor ?? "#000000"
+    readonly property real buttonHeightXXS: theme?.buttonHeightXXS ?? 28
     readonly property real buttonHeightXS: theme?.buttonHeightXS ?? 32
     readonly property real buttonHeightS: theme?.buttonHeightS ?? 40
     readonly property real buttonHeightM: theme?.buttonHeightM ?? 56
@@ -222,17 +285,35 @@ Singleton {
     readonly property real spinnerStrokeWidth: theme?.spinnerStrokeWidth ?? 2
     readonly property real tabMinWidth: theme?.tabMinWidth ?? 64
     readonly property real tabIndicatorHeight: theme?.tabIndicatorHeight ?? 3
+    readonly property real tabIndicatorMinWidth: theme?.tabIndicatorMinWidth ?? 24
+    readonly property real tabIndicatorInset: theme?.tabIndicatorInset ?? 2
+    readonly property real launcherTileSize: theme?.launcherTileSize ?? 120
+    readonly property real launcherImageRatio: theme?.launcherImageRatio ?? 0.75
+    readonly property int launcherMaxVisibleRows: theme?.launcherMaxVisibleRows ?? 8
+    readonly property real launcherWidthMicro: theme?.launcherWidthMicro ?? 500
+    readonly property real launcherWidthDefault: theme?.launcherWidthDefault ?? 620
+    readonly property real launcherWidthWide: theme?.launcherWidthWide ?? 720
+    readonly property real launcherWidthLarge: theme?.launcherWidthLarge ?? 860
+    readonly property real launcherHeightDefault: theme?.launcherHeightDefault ?? 600
+    readonly property real launcherScreenMargin: theme?.launcherScreenMargin ?? 100
+
     readonly property real fieldDefaultWidth: theme?.fieldDefaultWidth ?? 200
     readonly property real fieldHeight: theme?.fieldHeight ?? Math.round(fontSizeMedium * 3)
     readonly property real fieldHeightLarge: theme?.fieldHeightLarge ?? 48
+    readonly property real outlinedFieldLabelLineHeight: theme?.outlinedFieldLabelLineHeight ?? 16
+    readonly property real textFieldSpatialStiffness: theme?.textFieldSpatialStiffness ?? 800
+    readonly property real textFieldSpatialDampingRatio: theme?.textFieldSpatialDampingRatio ?? 1
+    readonly property real textFieldFastEffectsStiffness: theme?.textFieldFastEffectsStiffness ?? 3800
+    readonly property real textFieldSlowEffectsStiffness: theme?.textFieldSlowEffectsStiffness ?? 800
     readonly property real textEditHeight: theme?.textEditHeight ?? Math.round(fontSizeMedium * 8)
     readonly property real tooltipMaxWidth: theme?.tooltipMaxWidth ?? 500
+    readonly property int tooltipDelay: theme?.tooltipDelay ?? 400
     readonly property real menuMaxHeight: theme?.menuMaxHeight ?? 400
-    readonly property real clockFaceSize: theme?.clockFaceSize ?? 250
-    readonly property real clockOuterRingRatio: theme?.clockOuterRingRatio ?? 0.34
-    readonly property real clockInnerRingRatio: theme?.clockInnerRingRatio ?? 0.2
+    readonly property real clockFaceSize: theme?.clockFaceSize ?? 256
+    readonly property real clockOuterRingRatio: theme?.clockOuterRingRatio ?? 101 / clockFaceSize
+    readonly property real clockInnerRingRatio: theme?.clockInnerRingRatio ?? 69 / clockFaceSize
     readonly property real clockHandWidth: theme?.clockHandWidth ?? 2
-    readonly property real clockHandleSize: theme?.clockHandleSize ?? 40
+    readonly property real clockHandleSize: theme?.clockHandleSize ?? 48
     readonly property real clockCenterSize: theme?.clockCenterSize ?? 8
     readonly property int clockSwitchDelay: theme?.clockSwitchDelay ?? 100
     readonly property real chipIconSize: theme?.chipIconSize ?? 18
@@ -240,7 +321,13 @@ Singleton {
     readonly property string fontFamily: theme?.fontFamily ?? Fonts.sans
     readonly property string monoFontFamily: theme?.monoFontFamily ?? Fonts.mono
     readonly property int fontWeight: theme?.fontWeight ?? Font.Normal
+    readonly property int fontWeightMedium: shiftedFontWeight(Font.Medium)
+    readonly property int fontWeightBold: shiftedFontWeight(Font.Bold)
     readonly property real popupTransparency: theme?.popupTransparency ?? 1.0
+
+    function shiftedFontWeight(weight) {
+        return Math.max(Font.Thin, Math.min(Font.Black, weight + fontWeight - Font.Normal));
+    }
 
     readonly property int currentAnimationSpeed: theme?.currentAnimationSpeed ?? Style.AnimationSpeed.Short
     readonly property int currentAnimationBaseDuration: theme?.currentAnimationBaseDuration ?? 500

@@ -1,17 +1,12 @@
 .pragma library
+.import "FocusNavigation.js" as FocusNavigation
 
 function focusItem(item) {
     if (!item)
         return false;
     if (item.focusTarget && item.focusTarget !== item)
         return focusItem(item.focusTarget);
-    Qt.callLater(() => {
-        if (typeof item.requestFocus === "function") {
-            item.requestFocus();
-            return;
-        }
-        item.forceActiveFocus();
-    });
+    Qt.callLater(() => FocusNavigation.focusItem(item, false));
     return true;
 }
 
@@ -32,7 +27,7 @@ function selectNext(tabBar, repeater, step) {
 }
 
 function handleKeyEvent(event, tabBar, repeater, rtl) {
-    if (!tabBar.activeFocus || repeater.count === 0)
+    if (!FocusNavigation.containsFocus(tabBar) || repeater.count === 0)
         return false;
     if (event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier))
         return false;

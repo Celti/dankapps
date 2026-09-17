@@ -141,7 +141,7 @@ Rectangle {
         contentItem: Rectangle {
             id: contentSurface
             color: Style.surface
-            radius: Style.cornerRadius
+            radius: Style.windowRadius
 
             ElevationShadow {
                 id: shadowLayer
@@ -158,7 +158,7 @@ Rectangle {
             Rectangle {
                 width: 24
                 height: 24
-                radius: 12
+                radius: Style.cornerRadiusM
                 color: closeMouseArea.containsMouse ? Style.errorHover : Style.withAlpha(Style.errorHover, 0)
                 anchors.top: parent.top
                 anchors.right: parent.right
@@ -205,7 +205,7 @@ Rectangle {
                             StyledText {
                                 text: modelData.name
                                 font.pixelSize: Style.fontSizeSmall
-                                font.weight: Font.Medium
+                                font.weight: Style.fontWeightMedium
                                 color: Style.surfaceText
                             }
 

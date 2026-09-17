@@ -1,6 +1,7 @@
 //@ pragma UseQApplication
 
 import QtQuick
+import qs.DankCommon.Widgets
 import Quickshell
 import qs.Common
 import qs.Common as App
@@ -8,8 +9,6 @@ import qs.Services as AppServices
 import qs.DankCommon.Common
 import qs.DankCommon.Common as DC
 import qs.DankCommon.Modals.FileBrowser
-import qs.DankCommon.Widgets
-import qs.DankCommon.Widgets.Expressive as X
 import qs.Services
 
 ShellRoot {
@@ -79,6 +78,31 @@ ShellRoot {
                     anchors.margins: Theme.spacingM
                     spacing: Theme.spacingM
 
+                    DankButton {
+                        text: I18n.tr("Text fields")
+                        onClicked: galleryFlickable.contentY = widgetExamples.y
+                    }
+
+                    Column {
+                        width: Theme.fieldDefaultWidth
+                        spacing: Theme.spacingXS
+
+                        StyledText {
+                            text: I18n.tr("Radius scale")
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceVariantText
+                        }
+
+                        DankSlider {
+                            width: parent.width
+                            Accessible.name: I18n.tr("Radius scale")
+                            value: Theme.radiusStrength
+                            minimum: 0
+                            maximum: 100
+                            onSliderValueChanged: value => Theme.radiusStrength = value
+                        }
+                    }
+
                     Column {
                         spacing: Theme.spacingXS
 
@@ -128,6 +152,7 @@ ShellRoot {
                 clip: true
 
                 DankFlickable {
+                    id: galleryFlickable
                     anchors.fill: parent
                     anchors.margins: Theme.spacingM
                     contentHeight: gallery.height
@@ -140,14 +165,14 @@ ShellRoot {
                         spacing: Theme.spacingL
 
                         Section {
-                            text: "Expressive: buttons and groups"
+                            text: I18n.tr("Buttons")
                         }
 
                         Flow {
                             width: parent.width
                             spacing: Theme.spacingM
 
-                            X.DankButton {
+                            DankButton {
                                 property int clicks: 0
 
                                 text: clicks > 0 ? `Clicked ${clicks}x` : "Filled"
@@ -155,33 +180,41 @@ ShellRoot {
                                 onClicked: clicks++
                             }
 
-                            X.DankButton {
+                            DankButton {
                                 text: "Tonal"
                                 backgroundColor: Theme.secondaryContainer
                                 textColor: Theme.onSecondaryContainer
                             }
 
-                            X.DankButton {
+                            DankButton {
                                 text: "Large"
                                 buttonHeight: 56
                                 iconName: "schedule"
                                 onClicked: timePicker.open()
                             }
 
-                            X.DankActionButton {
-                                iconName: "info"
-                                buttonSize: Theme.iconButtonSize
-                                tooltipText: "Expressive icon button"
+                            DankButton {
+                                text: "Square button"
+                                buttonHeight: 56
+                                shape: "square"
+                                iconName: "schedule"
+                                onClicked: timePicker.open()
                             }
 
-                            X.DankRefreshButton {
+                            DankActionButton {
+                                iconName: "info"
+                                buttonSize: Theme.iconButtonSize
+                                tooltipText: I18n.tr("Icon button")
+                            }
+
+                            DankRefreshButton {
                                 property bool spin: false
                                 busy: spin
                                 onClicked: spin = !spin
                             }
                         }
 
-                        X.DankButtonGroup {
+                        DankButtonGroup {
                             model: ["List", "Grid", "Tree"]
                             currentIndex: 0
                             onSelectionChanged: (index, selected) => {
@@ -190,40 +223,146 @@ ShellRoot {
                             }
                         }
 
-                        X.DankButtonGroup {
+                        Section {
+                            text: "DankSplitButton"
+                        }
+
+                        Column {
+                            id: splitButtonExamples
+                            width: parent.width
+                            spacing: Theme.spacingM
+
+                            DankSplitButton {
+                                id: splitSortButton
+                                property bool descending: false
+                                property string sortBy: I18n.tr("Name")
+                                text: I18n.tr("Sort by") + ": " + sortBy
+                                iconName: descending ? "arrow_downward" : "arrow_upward"
+                                variant: "tonal"
+                                maximumWidth: parent.width
+                                expanded: splitSortMenu.menuVisible
+                                tooltipText: descending ? I18n.tr("Ascending") : I18n.tr("Descending")
+                                menuTooltipText: I18n.tr("Sort by")
+                                onClicked: descending = !descending
+                                onMenuClicked: {
+                                    splitSortMenu.currentValue = sortBy;
+                                    splitSortMenu.openDropdownMenu();
+                                }
+
+                                DankDropdown {
+                                    id: splitSortMenu
+                                    showTrigger: false
+                                    popupAnchorItem: splitSortButton.trailingButton
+                                    focusReturnTarget: splitSortButton.trailingButton
+                                    popupWidth: Math.min(splitButtonExamples.width, Theme.fieldDefaultWidth)
+                                    options: [I18n.tr("Name"), I18n.tr("Author"), I18n.tr("Last modified")]
+                                    onValueChanged: value => splitSortButton.sortBy = value
+                                }
+                            }
+
+                            DankSplitButton {
+                                id: splitFilterButton
+                                property string filter: I18n.tr("Enabled")
+                                text: I18n.tr("Filter") + ": " + filter
+                                iconName: "filter_list"
+                                menuOnly: true
+                                variant: "tonal"
+                                maximumWidth: parent.width
+                                expanded: splitFilterMenu.menuVisible
+                                menuTooltipText: I18n.tr("Filter")
+                                onMenuClicked: {
+                                    splitFilterMenu.currentValue = filter;
+                                    splitFilterMenu.openDropdownMenu();
+                                }
+
+                                DankDropdown {
+                                    id: splitFilterMenu
+                                    showTrigger: false
+                                    popupAnchorItem: splitFilterButton.trailingButton
+                                    focusReturnTarget: splitFilterButton.trailingButton
+                                    popupWidth: Math.min(splitButtonExamples.width, Theme.fieldDefaultWidth)
+                                    options: [I18n.tr("All"), I18n.tr("Enabled"), I18n.tr("Disabled")]
+                                    onValueChanged: value => splitFilterButton.filter = value
+                                }
+                            }
+
+                            Flow {
+                                width: parent.width
+                                spacing: Theme.spacingM
+
+                                Repeater {
+                                    model: ["filled", "tonal", "outlined", "elevated"]
+
+                                    DankSplitButton {
+                                        required property string modelData
+                                        property int clicks: 0
+                                        text: modelData + (clicks ? " · " + clicks : "")
+                                        variant: modelData
+                                        iconName: "add"
+                                        maximumWidth: splitButtonExamples.width
+                                        onClicked: clicks++
+                                        onMenuClicked: expanded = !expanded
+                                    }
+                                }
+
+                                DankSplitButton {
+                                    text: I18n.tr("Disabled")
+                                    iconName: "add"
+                                    enabled: false
+                                    maximumWidth: splitButtonExamples.width
+                                }
+                            }
+
+                            Repeater {
+                                model: ["xs", "s", "m", "l", "xl"]
+
+                                DankSplitButton {
+                                    required property string modelData
+                                    property int clicks: 0
+                                    text: modelData.toUpperCase() + (clicks ? " · " + clicks : "")
+                                    size: modelData
+                                    iconName: size === "l" || size === "xl" ? "" : "add"
+                                    maximumWidth: splitButtonExamples.width
+                                    onClicked: clicks++
+                                    onMenuClicked: expanded = !expanded
+                                }
+                            }
+                        }
+
+                        DankButtonGroup {
                             model: ["Mon", "Tue", "Wed", "Thu", "Fri"]
                             selectionMode: "multi"
                             initialSelection: ["Mon", "Fri"]
                         }
 
                         Section {
-                            text: "Expressive: toggles, chips, tabs"
+                            text: I18n.tr("Selection")
                         }
 
-                        X.DankToggle {
-                            id: xToggle
+                        DankToggle {
+                            id: featureToggle
 
-                            text: "Expressive toggle"
+                            text: I18n.tr("Toggle")
                             description: "Spring thumb, M3 switch metrics"
                             checked: true
-                            onToggled: checked => xToggle.checked = checked
+                            onToggled: checked => featureToggle.checked = checked
                         }
 
-                        X.DankToggle {
-                            id: xGated
+                        DankToggle {
+                            id: gatedToggle
 
                             text: "Gated toggle"
-                            description: xToggle.checked ? "Enabled by the one above" : "Disabled by the one above"
-                            enabled: xToggle.checked
-                            onToggled: checked => xGated.checked = checked
+                            description: featureToggle.checked ? "Enabled by the one above" : "Disabled by the one above"
+                            enabled: featureToggle.checked
+                            onToggled: checked => gatedToggle.checked = checked
                         }
 
-                        X.DankFilterChips {
+                        DankFilterChips {
                             width: Math.min(340, gallery.width)
                             model: ["All", "Active", "Muted"]
                         }
 
-                        X.DankTabBar {
+                        DankTabBar {
                             width: Math.min(340, gallery.width)
                             model: [
                                 {
@@ -243,66 +382,67 @@ ShellRoot {
                         }
 
                         Section {
-                            text: "Expressive: sliders"
+                            text: I18n.tr("Sliders")
                         }
 
-                        X.DankSlider {
-                            width: Math.min(340, gallery.width)
-                            value: 40
-                            leftIcon: "volume_down"
-                            rightIcon: "volume_up"
-                            onSliderValueChanged: newValue => value = newValue
-                        }
-
-                        X.DankSlider {
+                        DankSlider {
                             width: Math.min(340, gallery.width)
                             value: 50
                             step: 25
+                            showStops: true
                             unit: ""
                             onSliderValueChanged: newValue => value = newValue
                         }
 
-                        X.DankSlider {
+                        DankSlider {
                             width: Math.min(340, gallery.width)
                             value: 30
                             enabled: false
                         }
 
-                        X.DankSlider {
+                        DankSlider {
                             width: Math.min(340, gallery.width)
                             value: 65
                             size: "m"
                             onSliderValueChanged: newValue => value = newValue
                         }
 
-                        X.DankSlider {
+                        DankSlider {
+                            width: Math.min(340, gallery.width)
+                            value: 65
+                            size: "m"
+                            onSliderValueChanged: newValue => value = newValue
+                            insetIcon: "brightness_high"
+                            insetIconPosition: "end"
+                        }
+
+                        DankSlider {
                             width: Math.min(340, gallery.width)
                             value: 45
                             size: "xl"
-                            leftIcon: "brightness_low"
-                            rightIcon: "brightness_high"
+                            startIcon: "brightness_low"
+                            endIcon: "brightness_high"
+                            iconsClickable: true
                             onSliderValueChanged: newValue => value = newValue
                         }
 
                         Section {
-                            text: "Expressive: fields and dropdown"
+                            text: I18n.tr("Text fields")
                         }
 
                         Flow {
                             width: parent.width
                             spacing: Theme.spacingM
 
-                            X.DankTextField {
+                            DankSearchField {
                                 width: Math.min(300, gallery.width)
-                                leftIconName: "search"
                                 placeholderText: "Search settings"
-                                cornerRadius: Theme.cornerRadiusFull
-                                showClearButton: true
                             }
 
-                            X.DankTextField {
+                            DankTextField {
                                 width: Math.min(300, gallery.width)
                                 labelText: "Password"
+                                outlined: true
                                 leftIconName: "lock"
                                 placeholderText: "Reveal with the eye"
                                 echoMode: TextInput.Password
@@ -310,159 +450,10 @@ ShellRoot {
                             }
                         }
 
-                        X.DankTextEdit {
+                        WidgetGallery {
+                            id: widgetExamples
                             width: parent.width
-                            leftIconName: "edit"
-                            placeholderText: "Multi-line notes..."
-                        }
-
-                        X.DankDropdown {
-                            width: Math.min(320, gallery.width)
-                            text: "Fruit"
-                            description: "Fuzzy search enabled"
-                            enableFuzzySearch: true
-                            options: ["Apple", "Banana", "Cherry", "Dragonfruit", "Elderberry", "Fig", "Grape"]
-                            currentValue: "Apple"
-                            onValueChanged: value => currentValue = value
-                        }
-
-                        X.DankCollapsibleSection {
-                            width: Math.min(340, gallery.width)
-                            title: "Details"
-                            description: "Grouped header, expands below"
-                            showBackground: true
-                            onToggleRequested: expanded = !expanded
-
-                            StyledText {
-                                text: "Collapsible content"
-                            }
-                        }
-
-                        X.DankNumberStepper {
-                            property int count: 5
-
-                            text: count
-                            onIncrement: () => count++
-                            onDecrement: () => count--
-                        }
-
-                        X.DankTimePicker {
-                            id: timePicker
-                            parent: window.contentItem
-                            hour: 7
-                            minute: 0
-                            onAccepted: (h, m) => log.info("time:", h, m)
-                        }
-
-                        Section {
-                            text: "Buttons"
-                        }
-
-                        Flow {
-                            width: parent.width
-                            spacing: Theme.spacingM
-
-                            DankButton {
-                                id: clickButton
-
-                                property int clicks: 0
-
-                                text: clicks > 0 ? `Clicked ${clicks}x` : "Click me"
-                                iconName: "ads_click"
-                                onClicked: clicks++
-                            }
-
-                            DankButton {
-                                text: "Pick a file"
-                                iconName: "folder_open"
-                                backgroundColor: Theme.surfaceVariant
-                                textColor: Theme.surfaceText
-                                onClicked: fileBrowser.open()
-                            }
-
-                            DankButton {
-                                text: "Pick a folder"
-                                iconName: "folder"
-                                backgroundColor: Theme.surfaceVariant
-                                textColor: Theme.surfaceText
-                                onClicked: folderBrowser.open()
-                            }
-
-                            DankActionButton {
-                                iconName: "info"
-                                tooltipText: "Action buttons are circular icon buttons"
-                            }
-                        }
-
-                        Section {
-                            text: "Button groups"
-                        }
-
-                        DankButtonGroup {
-                            id: viewGroup
-
-                            model: ["List", "Grid", "Tree"]
-                            currentIndex: 0
-                            onSelectionChanged: (index, selected) => {
-                                if (selected)
-                                    currentIndex = index;
-                            }
-                        }
-
-                        DankButtonGroup {
-                            id: daysGroup
-
-                            model: ["Mon", "Tue", "Wed", "Thu", "Fri"]
-                            selectionMode: "multi"
-                            initialSelection: ["Mon", "Fri"]
-                        }
-
-                        Section {
-                            text: "Toggles"
-                        }
-
-                        DankToggle {
-                            id: featureToggle
-
-                            text: "Interactive toggle"
-                            description: "Owns its state through onToggled"
-                            checked: true
-                            onToggled: checked => featureToggle.checked = checked
-                        }
-
-                        DankToggle {
-                            id: gatedToggle
-
-                            text: "Gated toggle"
-                            description: featureToggle.checked ? "Enabled by the one above" : "Disabled by the one above"
-                            enabled: featureToggle.checked
-                            onToggled: checked => gatedToggle.checked = checked
-                        }
-
-                        Section {
-                            text: "Text fields"
-                        }
-
-                        Flow {
-                            width: parent.width
-                            spacing: Theme.spacingM
-
-                            DankTextField {
-                                width: Math.min(300, gallery.width)
-                                labelText: "Name"
-                                leftIconName: "badge"
-                                placeholderText: "Type, then clear..."
-                                showClearButton: true
-                            }
-
-                            DankTextField {
-                                width: Math.min(300, gallery.width)
-                                labelText: "Password"
-                                leftIconName: "lock"
-                                placeholderText: "Reveal with the eye"
-                                echoMode: TextInput.Password
-                                showPasswordToggle: true
-                            }
+                            flickable: galleryFlickable
                         }
 
                         DankTextEdit {
@@ -471,13 +462,7 @@ ShellRoot {
                             placeholderText: "Multi-line notes..."
                         }
 
-                        Section {
-                            text: "Dropdown"
-                        }
-
                         DankDropdown {
-                            id: fruitDropdown
-
                             width: Math.min(320, gallery.width)
                             text: "Fruit"
                             description: "Fuzzy search enabled"
@@ -485,6 +470,54 @@ ShellRoot {
                             options: ["Apple", "Banana", "Cherry", "Dragonfruit", "Elderberry", "Fig", "Grape"]
                             currentValue: "Apple"
                             onValueChanged: value => currentValue = value
+                        }
+
+                        DankCollapsibleSection {
+                            width: Math.min(340, gallery.width)
+                            title: "Details"
+                            description: "Grouped header, expands below"
+                            showBackground: true
+
+                            StyledText {
+                                text: "Collapsible content"
+                            }
+                        }
+
+                        DankNumberStepper {
+                            property int count: 5
+
+                            text: count
+                            onIncrement: () => count++
+                            onDecrement: () => count--
+                        }
+
+                        DankTimePicker {
+                            id: timePicker
+                            parent: window.contentItem
+                            hour: 7
+                            minute: 0
+                            onAccepted: (h, m) => log.info("time:", h, m)
+                        }
+
+                        Section {
+                            text: I18n.tr("File browser")
+                        }
+
+                        Flow {
+                            width: parent.width
+                            spacing: Theme.spacingM
+
+                            DankButton {
+                                text: I18n.tr("Pick a file")
+                                iconName: "folder_open"
+                                onClicked: fileBrowser.open()
+                            }
+
+                            DankButton {
+                                text: I18n.tr("Pick a folder")
+                                iconName: "folder"
+                                onClicked: folderBrowser.open()
+                            }
                         }
 
                         Section {
@@ -645,14 +678,15 @@ ShellRoot {
                         }
 
                         Section {
-                            text: "Sliders and progress"
+                            text: I18n.tr("Progress")
                         }
 
                         DankSlider {
                             width: Math.min(340, gallery.width)
                             value: 40
-                            leftIcon: "volume_down"
-                            rightIcon: "volume_up"
+                            startIcon: "volume_down"
+                            endIcon: "volume_up"
+                            iconsClickable: true
                             onSliderValueChanged: newValue => log.info("slider:", newValue)
                         }
 
@@ -661,67 +695,6 @@ ShellRoot {
                             height: 24
                             value: 0.6
                             isPlaying: true
-                        }
-
-                        Section {
-                            text: "Tabs"
-                        }
-
-                        DankTabBar {
-                            width: Math.min(340, gallery.width)
-                            model: [
-                                {
-                                    "icon": "home",
-                                    "text": "Home"
-                                },
-                                {
-                                    "icon": "palette",
-                                    "text": "Theme"
-                                },
-                                {
-                                    "icon": "info",
-                                    "text": "About"
-                                }
-                            ]
-                            onTabClicked: index => log.info("tab:", index)
-                        }
-
-                        Section {
-                            text: "Filter chips"
-                        }
-
-                        DankFilterChips {
-                            width: Math.min(340, gallery.width)
-                            model: ["All", "Active", "Muted"]
-                            onSelectionChanged: index => log.info("chip:", index)
-                        }
-
-                        Section {
-                            text: "Collapsible section"
-                        }
-
-                        DankCollapsibleSection {
-                            width: Math.min(340, gallery.width)
-                            title: "Details"
-                            description: "Expands and collapses"
-                            showBackground: true
-                            onToggleRequested: expanded = !expanded
-
-                            StyledText {
-                                text: "Collapsible content"
-                            }
-                        }
-
-                        Section {
-                            text: "Number stepper"
-                        }
-
-                        DankNumberStepper {
-                            property int count: 5
-
-                            text: count
-                            onIncrement: () => count++
-                            onDecrement: () => count--
                         }
 
                         Section {
@@ -807,7 +780,7 @@ ShellRoot {
 
     component Section: StyledText {
         font.pixelSize: Theme.fontSizeLarge
-        font.weight: Font.Medium
+        font.weight: Style.fontWeightMedium
         color: Theme.primary
     }
 

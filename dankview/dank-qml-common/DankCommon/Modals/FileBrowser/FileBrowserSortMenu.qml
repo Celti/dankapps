@@ -15,7 +15,7 @@ StyledRect {
     width: 200
     height: sortColumn.height + Style.spacingM * 2
     color: surfaceColor
-    radius: Style.cornerRadius
+    radius: Style.windowRadius
     border.color: Style.outlineMedium
     border.width: 1
     visible: false
@@ -33,7 +33,7 @@ StyledRect {
             text: I18n.tr("Sort By", "file browser sort menu section header")
             font.pixelSize: Style.fontSizeSmall
             color: Style.surfaceTextMedium
-            font.weight: Font.Medium
+            font.weight: Style.fontWeightMedium
         }
 
         Repeater {
@@ -78,6 +78,7 @@ StyledRect {
                     StyledText {
                         text: modelData?.name ?? ""
                         font.pixelSize: Style.fontSizeMedium
+                        font.weight: sortBy === modelData?.value ? Style.fontWeightMedium : Style.fontWeight
                         color: sortBy === modelData?.value ? Style.primary : Style.surfaceText
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -106,7 +107,7 @@ StyledRect {
             text: I18n.tr("Order", "file browser sort menu section header")
             font.pixelSize: Style.fontSizeSmall
             color: Style.surfaceTextMedium
-            font.weight: Font.Medium
+            font.weight: Style.fontWeightMedium
             topPadding: Style.spacingXS
         }
 
@@ -131,6 +132,7 @@ StyledRect {
                 StyledText {
                     text: I18n.tr("Ascending", "file browser sort order option")
                     font.pixelSize: Style.fontSizeMedium
+                    font.weight: sortAscending ? Style.fontWeightMedium : Style.fontWeight
                     color: sortAscending ? Style.primary : Style.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -169,6 +171,7 @@ StyledRect {
                 StyledText {
                     text: I18n.tr("Descending", "file browser sort order option")
                     font.pixelSize: Style.fontSizeMedium
+                    font.weight: !sortAscending ? Style.fontWeightMedium : Style.fontWeight
                     color: !sortAscending ? Style.primary : Style.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
                 }

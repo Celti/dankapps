@@ -1,7 +1,6 @@
 import QtQuick
-import qs.DankCommon.Common
 import qs.DankCommon.Widgets
-import qs.DankCommon.Widgets.Expressive as Expressive
+import qs.DankCommon.Common
 
 Row {
     id: navigation
@@ -70,7 +69,7 @@ Row {
                 text: currentPath.replace("file://", "")
                 font.pixelSize: Style.fontSizeMedium
                 color: Style.surfaceText
-                font.weight: Font.Medium
+                font.weight: Style.fontWeightMedium
                 anchors.fill: parent
                 anchors.leftMargin: Style.spacingS
                 anchors.rightMargin: Style.spacingS
@@ -91,7 +90,7 @@ Row {
             }
         }
 
-        Expressive.DankTextField {
+        DankTextField {
             id: pathInput
             anchors.fill: parent
             visible: pathEditMode
@@ -126,7 +125,7 @@ Row {
         visible: !showSidebar
         anchors.verticalCenter: parent.verticalCenter
 
-        Expressive.DankActionButton {
+        DankActionButton {
             circular: false
             iconName: "sort"
             iconSize: Style.iconSize - 6

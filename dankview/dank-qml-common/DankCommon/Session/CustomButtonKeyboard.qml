@@ -1,15 +1,15 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs.DankCommon.Common
 import qs.DankCommon.Widgets
+import qs.DankCommon.Common
 
 DankActionButton {
     id: customButtonKeyboard
     circular: false
-    property string text: ""
-    width: 40
-    height: 40
+    buttonSize: Style.iconButtonSize
+    focusPolicy: Qt.TabFocus
+    Accessible.name: text
     property bool isShift: false
     color: Style.surface
 
@@ -37,7 +37,7 @@ DankActionButton {
         text: parent.text
         color: Style.surfaceText
         font.pixelSize: Style.fontSizeXLarge
-        font.weight: Font.Normal
+        font.weight: Style.fontWeight
         visible: !parent.isIcon
     }
 }

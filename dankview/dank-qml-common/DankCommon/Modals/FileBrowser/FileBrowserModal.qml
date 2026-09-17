@@ -8,7 +8,7 @@ FloatingWindow {
 
     property bool disablePopupTransparency: true
     property string browserTitle: I18n.tr("Select File", "default file browser window title")
-    property string browserIcon: "folder_open"
+    property string browserIcon: "folder_open" // !TODO: plugin compat, the window header no longer draws an icon
     property string browserType: "generic"
     property var fileExtensions: ["*.*"]
     property alias filterExtensions: fileBrowserModal.fileExtensions
@@ -72,7 +72,7 @@ FloatingWindow {
 
     Rectangle {
         anchors.fill: parent
-        radius: Style.cornerRadius
+        radius: Style.windowRadius
         color: Style.floatingWindowSurface
     }
 
@@ -80,7 +80,7 @@ FloatingWindow {
         targetWindow: fileBrowserModal
         blurWidth: fileBrowserModal.visible ? fileBrowserModal.width : 0
         blurHeight: fileBrowserModal.visible ? fileBrowserModal.height : 0
-        blurRadius: Style.cornerRadius
+        blurRadius: Style.windowRadius
     }
 
     Loader {
@@ -95,7 +95,6 @@ FloatingWindow {
             windowControls: fileBrowserModal.windowControlsRef
 
             browserTitle: fileBrowserModal.browserTitle
-            browserIcon: fileBrowserModal.browserIcon
             browserType: fileBrowserModal.browserType
             fileExtensions: fileBrowserModal.fileExtensions
             showHiddenFiles: fileBrowserModal.showHiddenFiles
@@ -118,7 +117,7 @@ FloatingWindow {
 
     Rectangle {
         anchors.fill: parent
-        radius: Style.cornerRadius
+        radius: Style.windowRadius
         color: "transparent"
         border.color: Style.blurBorderColor
         border.width: Style.blurBorderWidth

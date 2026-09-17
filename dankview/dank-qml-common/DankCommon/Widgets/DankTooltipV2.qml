@@ -1,15 +1,26 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Window
 import qs.DankCommon.Common
 
 Item {
     id: root
 
     property string text: ""
+    property alias delay: tooltip.delay
+    property Item sourceItem: null
+    readonly property var sourceWindow: sourceItem?.Window.window ?? null
+
+    onSourceItemChanged: {
+        if (!sourceItem)
+            tooltip.close();
+    }
 
     function show(text, item, offsetX, offsetY, preferredSide) {
-        if (!item)
+        if (!item || !item.visible) {
+            hide();
             return;
+        }
 
         let windowContentItem = item.Window?.window?.contentItem;
         if (!windowContentItem) {
@@ -25,6 +36,7 @@ Item {
         if (!windowContentItem)
             return;
 
+        root.sourceItem = item;
         tooltip.parent = windowContentItem;
         tooltip.text = text;
 
@@ -33,6 +45,7 @@ Item {
         const parentHeight = windowContentItem.height;
         const tooltipWidth = tooltip.implicitWidth;
         const tooltipHeight = tooltip.implicitHeight;
+        const gap = Style.spacingS;
 
         const side = preferredSide || _determineBestSide(itemPos, item, parentWidth, parentHeight, tooltipWidth, tooltipHeight);
 
@@ -41,89 +54,114 @@ Item {
 
         switch (side) {
         case "left":
-            targetX = itemPos.x - tooltipWidth - 8;
+            targetX = itemPos.x - tooltipWidth - gap;
             targetY = itemPos.y + (item.height - tooltipHeight) / 2;
             break;
         case "right":
-            targetX = itemPos.x + item.width + 8;
+            targetX = itemPos.x + item.width + gap;
             targetY = itemPos.y + (item.height - tooltipHeight) / 2;
             break;
         case "top":
             targetX = itemPos.x + (item.width - tooltipWidth) / 2;
-            targetY = itemPos.y - tooltipHeight - 8;
+            targetY = itemPos.y - tooltipHeight - gap;
             break;
         case "bottom":
         default:
             targetX = itemPos.x + (item.width - tooltipWidth) / 2;
-            targetY = itemPos.y + item.height + 8;
+            targetY = itemPos.y + item.height + gap;
             break;
         }
 
-        tooltip.x = Math.max(4, Math.min(parentWidth - tooltipWidth - 4, targetX + (offsetX || 0)));
-        tooltip.y = Math.max(4, Math.min(parentHeight - tooltipHeight - 4, targetY + (offsetY || 0)));
+        tooltip.x = Math.max(Style.spacingXS, Math.min(parentWidth - tooltipWidth - Style.spacingXS, targetX + (offsetX || 0)));
+        tooltip.y = Math.max(Style.spacingXS, Math.min(parentHeight - tooltipHeight - Style.spacingXS, targetY + (offsetY || 0)));
 
         tooltip.open();
     }
 
     function _determineBestSide(itemPos, item, parentWidth, parentHeight, tooltipWidth, tooltipHeight) {
         const itemCenterX = itemPos.x + item.width / 2;
-        const itemCenterY = itemPos.y + item.height / 2;
+        const margin = Style.spacingL;
 
         const spaceLeft = itemPos.x;
         const spaceRight = parentWidth - (itemPos.x + item.width);
         const spaceTop = itemPos.y;
         const spaceBottom = parentHeight - (itemPos.y + item.height);
 
-        if (spaceRight >= tooltipWidth + 16) {
+        if (spaceRight >= tooltipWidth + margin)
             return "right";
-        }
-        if (spaceLeft >= tooltipWidth + 16) {
+        if (spaceLeft >= tooltipWidth + margin)
             return "left";
-        }
-        if (spaceBottom >= tooltipHeight + 16) {
+        if (spaceBottom >= tooltipHeight + margin)
             return "bottom";
-        }
-        if (spaceTop >= tooltipHeight + 16) {
+        if (spaceTop >= tooltipHeight + margin)
             return "top";
-        }
-
-        if (itemCenterX > parentWidth / 2) {
+        if (itemCenterX > parentWidth / 2)
             return "left";
-        }
         return "right";
     }
 
     function hide() {
         tooltip.close();
+        sourceItem = null;
     }
 
-    Popup {
-        id: tooltip
+    onVisibleChanged: {
+        if (!visible)
+            hide();
+    }
+    Component.onDestruction: tooltip.close()
 
-        property string text: ""
+    Connections {
+        target: root.sourceItem
+        function onVisibleChanged() {
+            if (!root.sourceItem?.visible)
+                root.hide();
+        }
+    }
+
+    Connections {
+        target: root.sourceWindow
+        function onVisibleChanged() {
+            if (!root.sourceWindow?.visible)
+                root.hide();
+        }
+    }
+
+    ToolTip {
+        id: tooltip
 
         leftPadding: Style.spacingM
         rightPadding: Style.spacingM
         topPadding: Style.spacingS
         bottomPadding: Style.spacingS
+        margins: Style.spacingXS
         closePolicy: Popup.NoAutoClose
         modal: false
         dim: false
 
+        Binding {
+            target: tooltip.contentItem?.parent ?? null
+            property: "containmentMask"
+            value: QtObject {
+                function contains(position: point): bool {
+                    return false;
+                }
+            }
+        }
+
         background: Rectangle {
-            color: Style.surfaceContainerHigh
-            radius: Style.cornerRadius
-            border.width: 1
-            border.color: Style.outlineMedium
+            color: Style.inverseSurface
+            radius: Style.cornerRadiusXS
         }
 
         contentItem: Text {
             id: textContent
 
-            width: Math.min(implicitWidth, 500)
+            width: Math.min(implicitWidth, Style.tooltipMaxWidth)
             text: tooltip.text
             font.pixelSize: Style.fontSizeSmall
-            color: Style.surfaceText
+            font.family: Style.fontFamily
+            color: Style.inverseOnSurface
             wrapMode: Text.NoWrap
             maximumLineCount: 1
             elide: Text.ElideRight
@@ -132,22 +170,24 @@ Item {
         }
 
         enter: Transition {
-            NumberAnimation {
+            enabled: !Style.reduceMotion && Style.currentAnimationSpeed !== Style.AnimationSpeed.None
+            DankAnim {
                 property: "opacity"
                 from: 0
                 to: 1
-                duration: Style.shortDuration
-                easing.type: Style.standardEasing
+                duration: Style.expressiveDurations.expressiveEffects
+                easing.bezierCurve: Style.expressiveCurves.expressiveEffects
             }
         }
 
         exit: Transition {
-            NumberAnimation {
+            enabled: !Style.reduceMotion && Style.currentAnimationSpeed !== Style.AnimationSpeed.None
+            DankAnim {
                 property: "opacity"
                 from: 1
                 to: 0
                 duration: Style.shorterDuration
-                easing.type: Style.standardEasing
+                easing.bezierCurve: Style.expressiveCurves.expressiveEffects
             }
         }
     }

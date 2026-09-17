@@ -1,7 +1,6 @@
 import QtQuick
-import qs.DankCommon.Common
 import qs.DankCommon.Widgets
-import qs.DankCommon.Widgets.Expressive as Expressive
+import qs.DankCommon.Common
 
 Row {
     id: saveRow
@@ -21,7 +20,7 @@ Row {
     visible: saveMode || folderMode
     spacing: Style.spacingM
 
-    Expressive.DankTextField {
+    DankTextField {
         id: fileNameInput
 
         visible: saveRow.saveMode
@@ -63,11 +62,11 @@ Row {
             text: I18n.tr("Save", "file browser save button")
             color: fileNameInput.text.trim() !== "" ? Style.primaryText : Style.surfaceVariantText
             font.pixelSize: Style.fontSizeMedium
+            font.weight: Style.fontWeightMedium
         }
 
         StateLayer {
             stateColor: Style.primary
-            cornerRadius: Style.cornerRadius
             enabled: fileNameInput.text.trim() !== ""
             onClicked: {
                 if (fileNameInput.text.trim() !== "") {
@@ -104,14 +103,13 @@ Row {
                 text: I18n.tr("Use this folder", "file browser folder selection confirm button")
                 color: Style.primaryText
                 font.pixelSize: Style.fontSizeMedium
-                font.weight: Font.Medium
+                font.weight: Style.fontWeightMedium
                 anchors.verticalCenter: parent.verticalCenter
             }
         }
 
         StateLayer {
             stateColor: Style.primaryText
-            cornerRadius: Style.cornerRadius
             onClicked: {
                 var path = (selectedFilePath !== "" && selectedFileIsDir) ? selectedFilePath : currentPath;
                 var basePath = path.replace(/^file:\/\//, '');

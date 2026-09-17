@@ -2,6 +2,8 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "../DankCommon/Common/Shape.js" as Shape
+import "../DankCommon/Common/Surface.js" as Surface
 import Quickshell
 import qs.DankCommon.Common
 
@@ -11,6 +13,8 @@ Singleton {
     readonly property bool isLightMode: false
 
     property color primary: "#D0BCFF"
+    readonly property color contrastDark: "#000000"
+    readonly property color contrastLight: "#ffffff"
     property color primaryText: "#381E72"
     property color primaryContainer: "#4F378B"
     property color secondary: "#CCC2DC"
@@ -39,9 +43,15 @@ Singleton {
     property color onSurfaceVariant
     property color onPrimaryContainer
     property color onSecondaryContainer
+    property color onErrorContainer
     property color onTertiaryContainer
     property color onSurfaceVariant_30: withAlpha(onSurfaceVariant, 0.3)
     readonly property list<QtObject> roleBindings: [
+        Binding {
+            target: root
+            property: "onErrorContainer"
+            value: "#F9DEDC"
+        },
         Binding {
             target: root
             property: "onSurface"
@@ -106,16 +116,22 @@ Singleton {
     property color buttonPressed: withAlpha(primary, 0.16)
 
     property real popupTransparency: 1.0
+    property bool foregroundLayers: true
+    property real foregroundLayerTransparency: 1.0
+    readonly property real foregroundAlpha: Surface.foregroundAlpha(foregroundLayers, foregroundLayerTransparency)
     readonly property color floatingSurface: withAlpha(surfaceContainer, popupTransparency)
-    readonly property color nestedSurface: withAlpha(surfaceContainerHigh, popupTransparency)
+    readonly property color nestedSurface: withAlpha(surfaceContainerHigh, foregroundAlpha)
 
     property real floatingWindowTransparency: popupTransparency
+    property bool floatingWindowForegroundLayers: foregroundLayers
+    property real floatingWindowForegroundTransparency: foregroundLayerTransparency
+    readonly property real floatingWindowForegroundAlpha: Surface.foregroundAlpha(floatingWindowForegroundLayers, floatingWindowForegroundTransparency)
     property color floatingWindowSurface: withAlpha(surfaceContainer, floatingWindowTransparency)
-    property color floatingWindowNestedSurface: nestedSurface
-    property color floatingWindowFieldColor: withAlpha(surfaceContainerHigh, floatingWindowTransparency)
+    property color floatingWindowNestedSurface: withAlpha(surfaceContainerHigh, floatingWindowForegroundAlpha)
+    property color floatingWindowFieldColor: floatingWindowNestedSurface
     property color floatingWindowFieldBorderColor: withAlpha(outline, 0.16)
     property color floatingWindowFieldFocusedBorderColor: primary
-    property color popupFieldColor: withAlpha(surfaceContainerHigh, popupTransparency)
+    property color popupFieldColor: nestedSurface
     property color popupFieldBorderColor: withAlpha(outline, 0.16)
     property color popupFieldFocusedBorderColor: primary
     property bool blurLayersActive: true
@@ -138,41 +154,63 @@ Singleton {
     property real fontSizeXLarge: 20
     property real fontSizeXXLarge: 28
     property real fontSizeDisplay: 36
+    property real fontSizeDisplayLarge: 57
 
     property real iconSizeSmall: 16
     property real iconSize: 24
     property real iconSizeLarge: 32
 
-    property real cornerRadius: 12
-    readonly property real shapeScale: Math.max(0, Math.min(cornerRadius / 16, 1.5))
-    readonly property real cornerRadiusXS: Math.round(4 * shapeScale)
-    readonly property real cornerRadiusS: Math.round(8 * shapeScale)
-    readonly property real cornerRadiusM: Math.round(12 * shapeScale)
-    readonly property real cornerRadiusL: cornerRadius
-    readonly property real cornerRadiusXL: Math.round(28 * shapeScale)
-    readonly property real cornerRadiusXXL: Math.round(48 * shapeScale)
-    readonly property real cornerRadiusFull: 9999
+    property real radiusStrength: 50
+    readonly property real shapeScale: Shape.scaleForStrength(radiusStrength)
+    readonly property real cornerRadius: cornerRadiusM
+    readonly property real cornerRadiusXXS: Shape.radius("xxs", shapeScale)
+    readonly property real cornerRadiusXS: Shape.radius("xs", shapeScale)
+    readonly property real cornerRadiusS: Shape.radius("s", shapeScale)
+    readonly property real cornerRadiusM: Shape.radius("m", shapeScale)
+    readonly property real cornerRadiusL: Shape.radius("l", shapeScale)
+    readonly property real cornerRadiusLIncreased: Shape.radius("lIncreased", shapeScale)
+    readonly property real cornerRadiusXL: Shape.radius("xl", shapeScale)
+    readonly property real cornerRadiusXLIncreased: Shape.radius("xlIncreased", shapeScale)
+    readonly property real cornerRadiusXXL: Shape.radius("xxl", shapeScale)
+    readonly property real cornerRadiusFull: shapeScale > 0 ? 9999 : 0
     readonly property real cornerRadiusSmall: cornerRadiusS
     readonly property real cornerRadiusLarge: cornerRadiusL
+
+    function scaledRadius(radius, limit) {
+        return Shape.scaledRadius(radius, limit, shapeScale);
+    }
+
+    function fullRadius(width, height) {
+        return Shape.fullRadius(width, height, shapeScale);
+    }
+
+    function buttonRadius(width, height, sizeHeight, pressed, round) {
+        return Shape.buttonRadius(width, height, sizeHeight, pressed, round, shapeScale);
+    }
+
     readonly property real groupedListGap: spacingXXS
     readonly property real groupedListInnerRadius: cornerRadiusXS
     readonly property real groupedListOuterRadius: cornerRadiusL
     readonly property real iconButtonSize: 40
+    readonly property real minimumTouchTargetSize: 48
     readonly property real listItemHeight: 56
     readonly property real listItemTwoLineHeight: 72
     readonly property real avatarSize: 36
     readonly property real sliderTrackHeight: 16
     readonly property real sliderHandleWidth: 4
-    readonly property real sliderHandleHeight: 28
+    readonly property real sliderHandleWidthDesktop: 6
+    readonly property real sliderHandleWidthDesktopPressed: 4
+    readonly property real sliderHandleHeightDesktop: 32
+    readonly property real sliderHandleHeight: 44
     readonly property real sliderHandleGap: 6
-    readonly property real sliderTrackHeightS: 20
-    readonly property real sliderHandleHeightS: 32
-    readonly property real sliderTrackHeightM: 32
+    readonly property real sliderTrackHeightS: 24
+    readonly property real sliderHandleHeightS: 44
+    readonly property real sliderTrackHeightM: 40
     readonly property real sliderHandleHeightM: 44
-    readonly property real sliderTrackHeightL: 40
-    readonly property real sliderHandleHeightL: 52
-    readonly property real sliderTrackHeightXL: 56
-    readonly property real sliderHandleHeightXL: 68
+    readonly property real sliderTrackHeightL: 56
+    readonly property real sliderHandleHeightL: 68
+    readonly property real sliderTrackHeightXL: 96
+    readonly property real sliderHandleHeightXL: 108
     readonly property real switchTrackWidth: 52
     readonly property real switchTrackHeight: 32
     readonly property real switchOutlineWidth: 2
@@ -185,32 +223,58 @@ Singleton {
     readonly property real outlineWidth: 1
     readonly property real outlineWidthFocused: 2
     readonly property real dividerWidth: 1
-    readonly property real focusRingWidth: 2
-    readonly property real focusRingOffset: 4
+    readonly property real focusRingWidth: 1.5
+    readonly property real focusRingOffset: 3
     readonly property color focusRingColor: primary
+    readonly property color lockScreenContentColor: "#ffffff"
+    readonly property real lockScreenScrimAlpha: 0.4
+    readonly property real lockScreenBlur: 0.8
+    readonly property int lockScreenBlurMax: 32
+    readonly property color screenOffColor: "#000000"
     readonly property real scrimAlpha: 0.55
+    readonly property color scrimColor: "#000000"
     readonly property real buttonHeightXS: 32
     readonly property real buttonHeightS: 40
     readonly property real buttonHeightM: 56
     readonly property real buttonMinWidth: 58
     readonly property real pressScale: 0.98
     readonly property real iconEnterScale: 0.6
+    readonly property real osdHeight: sliderHandleHeight + spacingS * 2
+    readonly property real dialogMaxWidth: 560
     readonly property real popupEnterScale: 0.92
     readonly property real pendingOpacity: 0.6
     readonly property real spinnerStrokeWidth: 2
     readonly property real tabMinWidth: 64
     readonly property real tabIndicatorHeight: 3
+    readonly property real tabIndicatorMinWidth: 24
+    readonly property real tabIndicatorInset: 2
+    readonly property real launcherTileSize: 120
+    readonly property real launcherImageRatio: 0.75
+    readonly property int launcherMaxVisibleRows: 8
+    readonly property real launcherWidthMicro: 500
+    readonly property real launcherWidthDefault: 620
+    readonly property real launcherWidthWide: 720
+    readonly property real launcherWidthLarge: 860
+    readonly property real launcherHeightDefault: 600
+    readonly property real launcherScreenMargin: 100
+
     readonly property real fieldDefaultWidth: 200
     readonly property real fieldHeight: Math.round(fontSizeMedium * 3)
     readonly property real fieldHeightLarge: 48
+    readonly property real outlinedFieldLabelLineHeight: 16
+    readonly property real textFieldSpatialStiffness: 800
+    readonly property real textFieldSpatialDampingRatio: 1
+    readonly property real textFieldFastEffectsStiffness: 3800
+    readonly property real textFieldSlowEffectsStiffness: 800
     readonly property real textEditHeight: Math.round(fontSizeMedium * 8)
     readonly property real tooltipMaxWidth: 500
+    readonly property int tooltipDelay: 400
     readonly property real menuMaxHeight: 400
-    readonly property real clockFaceSize: 250
-    readonly property real clockOuterRingRatio: 0.34
-    readonly property real clockInnerRingRatio: 0.2
+    readonly property real clockFaceSize: 256
+    readonly property real clockOuterRingRatio: 101 / clockFaceSize
+    readonly property real clockInnerRingRatio: 69 / clockFaceSize
     readonly property real clockHandWidth: 2
-    readonly property real clockHandleSize: 40
+    readonly property real clockHandleSize: 48
     readonly property real clockCenterSize: 8
     readonly property int clockSwitchDelay: 100
     readonly property real chipIconSize: 18
