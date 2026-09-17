@@ -29,10 +29,20 @@ Rectangle {
         }
     }
 
+    component WindowButton: DankActionButton {
+        buttonSize: Theme.buttonHeightXXS
+        iconSize: Theme.iconSizeSmall
+        iconColor: Theme.surfaceText
+    }
+
+    // Left: Navigation & Filename
     RowLayout {
-        anchors.fill: parent
+        id: leftRow
+        anchors.left: parent.left
         anchors.leftMargin: 14
-        anchors.rightMargin: 10
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.right: centerGroup.visible ? centerGroup.left : rightRow.left
+        anchors.rightMargin: 12
         spacing: 10
 
         // Leading Icon / Navigation button (always present to prevent layout shift)
@@ -61,6 +71,14 @@ Rectangle {
             color: Theme.surfaceText
             elide: Text.ElideMiddle
         }
+    }
+
+    // Center: Playback, Counter Badge & Zoom Pill (exactly centered in header)
+    RowLayout {
+        id: centerGroup
+        anchors.centerIn: parent
+        spacing: 8
+        visible: !ImageService.galleryMode
 
         // Center: Animated Image Play/Pause Control
         Rectangle {
@@ -120,23 +138,26 @@ Rectangle {
             }
         }
 
-        // Zoom percentage badge
+        // Center: Zoom Pill (Scroll to Zoom, Click to Reset)
         Rectangle {
+            id: zoomPill
             visible: ImageService.currentFilePath !== ""
-            implicitHeight: 30
-            implicitWidth: zoomRow.implicitWidth + 16
+            implicitHeight: 28
+            implicitWidth: zoomPillRow.implicitWidth + 20
             Layout.alignment: Qt.AlignVCenter
-            radius: 15
+            radius: Theme.cornerRadiusFull
             color: zoomMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
+            border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.25)
+            border.width: 1
 
             RowLayout {
-                id: zoomRow
+                id: zoomPillRow
                 anchors.centerIn: parent
                 spacing: 4
 
                 DankIcon {
                     name: "zoom_in"
-                    size: 16
+                    size: 15
                     color: Theme.surfaceVariantText
                 }
 
@@ -155,18 +176,31 @@ Rectangle {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: ImageService.resetZoom()
+                onWheel: wheel => {
+                    if (wheel.angleDelta.y > 0) {
+                        ImageService.zoomIn();
+                    } else if (wheel.angleDelta.y < 0) {
+                        ImageService.zoomOut();
+                    }
+                }
+            }
+
+            DankTooltipHost {
+                text: "Scroll to zoom • Click to reset"
+                target: zoomPill
+                hoverArea: zoomMouse
+                side: "bottom"
             }
         }
+    }
 
-        // Open File Action
-        DankActionButton {
-            iconName: "folder_open"
-            iconSize: 19
-            iconColor: Theme.surfaceText
-            tooltipText: "Open Image (O / Ctrl+O)"
-            tooltipSide: "bottom"
-            onClicked: ImageService.openFileDialog()
-        }
+    // Right: Actions & Window Controls
+    RowLayout {
+        id: rightRow
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 8
 
         // Favorite / Like Image
         DankActionButton {
@@ -193,7 +227,7 @@ Rectangle {
 
         // Lock UI / Zen View
         DankActionButton {
-            visible: ImageService.currentFilePath !== ""
+            visible: ImageService.currentFilePath !== "" && !ImageService.galleryMode
             iconName: "lock_open"
             iconSize: 19
             iconColor: Theme.surfaceText
@@ -202,8 +236,18 @@ Rectangle {
             onClicked: ImageService.toggleLockUI()
         }
 
+        // Open File Action (placed on the far right to maintain stable position)
+        DankActionButton {
+            iconName: "folder_open"
+            iconSize: 19
+            iconColor: Theme.surfaceText
+            tooltipText: "Open Image (O / Ctrl+O)"
+            tooltipSide: "bottom"
+            onClicked: ImageService.openFileDialog()
+        }
 
         Rectangle {
+            visible: root.windowControls?.canMinimize ?? false
             implicitWidth: 1
             implicitHeight: 20
             Layout.alignment: Qt.AlignVCenter
@@ -211,40 +255,16 @@ Rectangle {
             opacity: 0.4
         }
 
-        // Window Controls (minimize, maximize/fullscreen, close)
-        DankActionButton {
-            visible: root.windowControls && root.windowControls.canMinimize
+        // Window Controls (minimize)
+        WindowButton {
+            visible: root.windowControls?.canMinimize ?? false
             iconName: "minimize"
-            iconSize: 18
-            iconColor: Theme.surfaceText
             tooltipText: "Minimize"
             tooltipSide: "bottom"
             onClicked: {
                 if (root.windowControls)
                     root.windowControls.tryMinimize();
             }
-        }
-
-        DankActionButton {
-            visible: root.windowControls && root.windowControls.supported
-            iconName: (root.targetWindow && root.targetWindow.maximized) ? "fullscreen_exit" : "fullscreen"
-            iconSize: 19
-            iconColor: Theme.surfaceText
-            tooltipText: (root.targetWindow && root.targetWindow.maximized) ? "Restore (F)" : "Maximize (F)"
-            tooltipSide: "bottom"
-            onClicked: {
-                if (root.windowControls)
-                    root.windowControls.tryToggleMaximize();
-            }
-        }
-
-        DankActionButton {
-            iconName: "close"
-            iconSize: 19
-            iconColor: Theme.surfaceText
-            tooltipText: "Close (Esc)"
-            tooltipSide: "bottom"
-            onClicked: Qt.quit()
         }
     }
 }

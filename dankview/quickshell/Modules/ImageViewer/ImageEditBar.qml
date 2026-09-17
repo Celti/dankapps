@@ -40,7 +40,7 @@ Rectangle {
         color: isActive ? Theme.primaryContainer : (btnMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent")
 
         Behavior on color {
-            ColorAnimation { duration: 100 }
+            ColorAnimation { duration: Theme.shorterDuration }
         }
 
         DankIcon {
@@ -137,26 +137,6 @@ Rectangle {
             onClicked: ImageService.togglePlayback()
         }
 
-        BarSeparator {}
-
-        // Group 4: Zoom Controls
-        BarButton {
-            iconName: "zoom_out"
-            tooltipText: "Zoom Out (-)"
-            onClicked: ImageService.zoomOut()
-        }
-
-        BarButton {
-            iconName: "zoom_in"
-            tooltipText: "Zoom In (+)"
-            onClicked: ImageService.zoomIn()
-        }
-
-        BarButton {
-            iconName: "crop_free"
-            tooltipText: "Fit to Window (0)"
-            onClicked: ImageService.fitToWindow()
-        }
 
         BarSeparator {}
 
@@ -179,7 +159,7 @@ Rectangle {
                 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.88)
                 : Theme.primary
 
-            Behavior on color { ColorAnimation { duration: 100 } }
+            Behavior on color { ColorAnimation { duration: Theme.shorterDuration } }
 
             RowLayout {
                 id: doneBtnRow
@@ -338,7 +318,7 @@ Rectangle {
                 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.88)
                 : Theme.primary
 
-            Behavior on color { ColorAnimation { duration: 100 } }
+            Behavior on color { ColorAnimation { duration: Theme.shorterDuration } }
 
             RowLayout {
                 id: applyCropRow
