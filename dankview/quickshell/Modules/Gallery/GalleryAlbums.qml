@@ -13,8 +13,8 @@ Item {
 
     DankFlickable {
         anchors.fill: parent
-        anchors.leftMargin: 20
-        anchors.rightMargin: 20
+        anchors.leftMargin: 12
+        anchors.rightMargin: 12
         anchors.bottomMargin: 80
         contentHeight: albumsCol.implicitHeight + 40
         clip: true
@@ -23,6 +23,8 @@ Item {
             id: albumsCol
             anchors.left: parent.left
             anchors.right: parent.right
+            anchors.leftMargin: 8
+            anchors.rightMargin: 8
             anchors.top: parent.top
             spacing: 28
 

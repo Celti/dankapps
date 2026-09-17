@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Layouts
+import QtQuick.Shapes
 import qs.Common
 import qs.Services
 import qs.DankCommon.Widgets
@@ -42,12 +42,11 @@ Item {
     Rectangle {
         id: card
         anchors.fill: parent
-        radius: 12
-        clip: true
+        radius: Theme.cornerRadiusM
         color: Theme.surfaceContainerHigh
 
         scale: thumbMouse.containsMouse ? 1.02 : 1.0
-        Behavior on scale { NumberAnimation { duration: 120; easing.type: Theme.standardEasing } }
+        Behavior on scale { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
 
         Image {
             id: thumbImg
@@ -64,11 +63,64 @@ Item {
             sourceSize.height: 256
         }
 
+        // Corner mask overlay to cleanly round the image corners without ShaderEffect / FBO overhead
+        Shape {
+            anchors.fill: parent
+            asynchronous: false
+            visible: thumbImg.status === Image.Ready
+
+            ShapePath {
+                fillColor: Theme.surfaceContainerLowest
+                strokeColor: "transparent"
+                strokeWidth: 0
+
+                // Top-Left corner
+                startX: 0; startY: 0
+                PathLine { x: card.radius; y: 0 }
+                PathArc {
+                    x: 0; y: card.radius
+                    radiusX: card.radius; radiusY: card.radius
+                    direction: PathArc.Counterclockwise
+                }
+                PathLine { x: 0; y: 0 }
+
+                // Top-Right corner
+                PathMove { x: card.width; y: 0 }
+                PathLine { x: card.width - card.radius; y: 0 }
+                PathArc {
+                    x: card.width; y: card.radius
+                    radiusX: card.radius; radiusY: card.radius
+                    direction: PathArc.Clockwise
+                }
+                PathLine { x: card.width; y: 0 }
+
+                // Bottom-Right corner
+                PathMove { x: card.width; y: card.height }
+                PathLine { x: card.width; y: card.height - card.radius }
+                PathArc {
+                    x: card.width - card.radius; y: card.height
+                    radiusX: card.radius; radiusY: card.radius
+                    direction: PathArc.Clockwise
+                }
+                PathLine { x: card.width; y: card.height }
+
+                // Bottom-Left corner
+                PathMove { x: 0; y: card.height }
+                PathLine { x: card.radius; y: card.height }
+                PathArc {
+                    x: 0; y: card.height - card.radius
+                    radiusX: card.radius; radiusY: card.radius
+                    direction: PathArc.Clockwise
+                }
+                PathLine { x: 0; y: card.height }
+            }
+        }
+
         // Selection Border & Highlight Tint Overlay (drawn on top of image)
         Rectangle {
             id: selectionOverlay
             anchors.fill: parent
-            radius: 12
+            radius: card.radius
             color: root.isSelected
                 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, thumbMouse.containsMouse ? 0.22 : 0.16)
                 : "transparent"
@@ -77,8 +129,8 @@ Item {
                 : (thumbMouse.containsMouse ? Qt.rgba(1, 1, 1, 0.4) : "transparent")
             border.width: root.isSelected ? 3 : (thumbMouse.containsMouse ? 1 : 0)
 
-            Behavior on color { ColorAnimation { duration: 120 } }
-            Behavior on border.color { ColorAnimation { duration: 120 } }
+            Behavior on color { ColorAnimation { duration: Theme.shortDuration } }
+            Behavior on border.color { ColorAnimation { duration: Theme.shortDuration } }
         }
 
         // Dark gradient overlay for icons visibility on light photos

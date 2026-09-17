@@ -49,8 +49,8 @@ Item {
     DankFlickable {
         id: flick
         anchors.fill: parent
-        anchors.leftMargin: 20
-        anchors.rightMargin: 20
+        anchors.leftMargin: 12
+        anchors.rightMargin: 12
         anchors.bottomMargin: 80
         contentHeight: timelineCol.implicitHeight + 40
         clip: true
@@ -59,6 +59,8 @@ Item {
             id: timelineCol
             anchors.left: parent.left
             anchors.right: parent.right
+            anchors.leftMargin: 8
+            anchors.rightMargin: 8
             anchors.top: parent.top
             spacing: 24
 

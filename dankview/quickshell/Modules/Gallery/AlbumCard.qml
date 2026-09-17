@@ -29,7 +29,7 @@ Item {
             border.width: 1
 
             scale: cardMouse.containsMouse ? 1.02 : 1.0
-            Behavior on scale { NumberAnimation { duration: 120; easing.type: Theme.standardEasing } }
+            Behavior on scale { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
 
             // 2x2 Grid of Previews
             Grid {
