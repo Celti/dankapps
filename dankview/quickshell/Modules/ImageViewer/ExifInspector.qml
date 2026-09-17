@@ -32,8 +32,8 @@ Rectangle {
             radius: 2
             color: grabHandleMouse.containsMouse ? Theme.primary : Qt.rgba(1, 1, 1, 0.38)
 
-            Behavior on width { NumberAnimation { duration: 150; easing.type: Theme.standardEasing } }
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on width { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
+            Behavior on color { ColorAnimation { duration: Theme.shortDuration } }
         }
 
         MouseArea {

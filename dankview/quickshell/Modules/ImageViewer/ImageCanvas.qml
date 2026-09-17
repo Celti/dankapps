@@ -123,7 +123,7 @@ Item {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: 120
+                        duration: Theme.shortDuration
                         easing.type: Theme.standardEasing
                     }
                 }
@@ -143,7 +143,7 @@ Item {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: 120
+                        duration: Theme.shortDuration
                         easing.type: Theme.standardEasing
                     }
                 }

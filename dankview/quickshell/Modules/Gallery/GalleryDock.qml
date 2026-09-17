@@ -67,7 +67,7 @@ Rectangle {
                 radius: 19
                 color: isActive ? Theme.primaryContainer : (tabMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent")
 
-                Behavior on color { ColorAnimation { duration: 120 } }
+                Behavior on color { ColorAnimation { duration: Theme.shortDuration } }
 
                 RowLayout {
                     anchors.centerIn: parent

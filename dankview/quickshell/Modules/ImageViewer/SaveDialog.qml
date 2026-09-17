@@ -225,14 +225,14 @@ Rectangle {
                     property bool checked: false
                     width: 40; height: 24; radius: 12
                     color: checked ? Theme.primary : Theme.surfaceContainerHighest
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on color { ColorAnimation { duration: Theme.shortDuration } }
 
                     Rectangle {
                         width: 18; height: 18; radius: 9
                         anchors.verticalCenter: parent.verticalCenter
                         x: stripToggle.checked ? parent.width - width - 3 : 3
                         color: "white"
-                        Behavior on x { NumberAnimation { duration: 120 } }
+                        Behavior on x { NumberAnimation { duration: Theme.shortDuration } }
                     }
 
                     MouseArea {

@@ -10,7 +10,7 @@ Item {
     implicitHeight: ImageService.galleryTab === "gallery" ? 44 : 0
     visible: ImageService.galleryTab === "gallery"
 
-    Behavior on implicitHeight { NumberAnimation { duration: 150; easing.type: Theme.standardEasing } }
+    Behavior on implicitHeight { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
 
     // Category Filter Chips (Gallery tab only)
     Flickable {

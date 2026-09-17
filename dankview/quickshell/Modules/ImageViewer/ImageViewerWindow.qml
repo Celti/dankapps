@@ -237,7 +237,7 @@ FloatingWindow {
         Rectangle {
             id: windowFrame
             anchors.fill: parent
-            radius: window.maximized ? 0 : 16
+            radius: window.maximized ? 0 : Theme.windowRadius
             color: Theme.surfaceContainerLowest
             border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.4)
             border.width: window.maximized ? 0 : 1
@@ -350,7 +350,7 @@ FloatingWindow {
                 visible: !ImageService.galleryMode && !ImageService.uiLocked && ImageService.currentFilePath !== "" && !ImageService.inspectorOpen && !ImageService.editMode && !ImageService.cropMode
                 z: 50
 
-                Behavior on color { ColorAnimation { duration: 100 } }
+                Behavior on color { ColorAnimation { duration: Theme.shorterDuration } }
 
                 // Handle indicator line
                 Rectangle {
@@ -361,8 +361,8 @@ FloatingWindow {
                     radius: 2
                     color: bottomTabMouse.containsMouse ? Theme.primary : Theme.outlineVariant
 
-                    Behavior on width { NumberAnimation { duration: 150; easing.type: Theme.standardEasing } }
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on width { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
+                    Behavior on color { ColorAnimation { duration: Theme.shortDuration } }
                 }
 
                 MouseArea {
@@ -487,7 +487,7 @@ FloatingWindow {
 
                 Behavior on opacity { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
                 Behavior on scale { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
-                Behavior on color { ColorAnimation { duration: 100 } }
+                Behavior on color { ColorAnimation { duration: Theme.shorterDuration } }
 
                 DankIcon {
                     anchors.centerIn: parent
