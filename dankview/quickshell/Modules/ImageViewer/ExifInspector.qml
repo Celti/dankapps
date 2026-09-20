@@ -109,6 +109,8 @@ Rectangle {
         id: chip
         property string iconName: ""
         property string label: ""
+        property color iconColor: Theme.primary
+        property color labelColor: Theme.surfaceText
         signal clicked()
 
         implicitHeight: 32
@@ -126,14 +128,14 @@ Rectangle {
             DankIcon {
                 name: chip.iconName
                 size: 16
-                color: Theme.primary
+                color: chip.iconColor
             }
 
             StyledText {
                 text: chip.label
                 font.pixelSize: Theme.fontSizeSmall
                 font.weight: Theme.fontWeightMedium
-                color: Theme.surfaceText
+                color: chip.labelColor
             }
         }
 
@@ -238,6 +240,19 @@ Rectangle {
                 font.pixelSize: Theme.fontSizeLarge
                 font.weight: Theme.fontWeightBold
                 color: Theme.surfaceText
+            }
+
+            DankActionButton {
+                iconName: "delete"
+                iconSize: 18
+                buttonSize: 32
+                iconColor: Theme.error
+                tooltipText: "Move to Trash (Delete)"
+                tooltipSide: "bottom"
+                onClicked: {
+                    ImageService.inspectorOpen = false;
+                    ImageService.moveToTrash();
+                }
             }
 
             DankActionButton {
@@ -392,6 +407,17 @@ Rectangle {
                                 iconName: "print"
                                 label: "Print"
                                 onClicked: ImageService.printImage()
+                            }
+
+                            ActionChip {
+                                iconName: "delete"
+                                label: "Move to Trash"
+                                iconColor: Theme.error
+                                labelColor: Theme.error
+                                onClicked: {
+                                    ImageService.inspectorOpen = false;
+                                    ImageService.moveToTrash();
+                                }
                             }
                         }
                     }

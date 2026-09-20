@@ -138,15 +138,6 @@ Rectangle {
         }
 
 
-        BarSeparator {}
-
-        // Group 5: Delete / Trash
-        BarButton {
-            iconName: "delete"
-            tooltipText: "Move to Trash (Delete)"
-            iconColor: Theme.error
-            onClicked: ImageService.moveToTrash()
-        }
 
         BarSeparator {}
 
