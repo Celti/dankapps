@@ -13,7 +13,7 @@ Rectangle {
     implicitHeight: 46
     implicitWidth: (ImageService.cropMode ? cropRow.implicitWidth : editRow.implicitWidth) + 24
     radius: 23
-    color: Qt.rgba(Theme.surfaceContainerHigh.r, Theme.surfaceContainerHigh.g, Theme.surfaceContainerHigh.b, 0.95)
+    color: Theme.withAlpha(Theme.chipSurface, 0.95)
     border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.30)
     border.width: 1
     clip: true

@@ -176,6 +176,12 @@ Singleton {
     property color surfaceContainer: currentThemeData.surfaceContainer
     property color surfaceContainerHigh: currentThemeData.surfaceContainerHigh
     property color surfaceContainerHighest: currentThemeData.surfaceContainerHighest || surfaceContainerHigh
+    readonly property color hostSurface: surface
+    readonly property color cardSurface: surfaceContainer
+    readonly property color chipSurface: surfaceContainerHigh
+    readonly property color chipSurfaceNested: surfaceContainerHighest
+    readonly property color readableSurface: withAlpha(hostSurface, popupTransparency)
+    readonly property color readableSurfaceHigh: withAlpha(cardSurface, popupTransparency)
     property color inverseSurface: currentThemeData.inverseSurface || surfaceText
     property color inverseOnSurface: currentThemeData.inverseOnSurface || surface
     readonly property color contrastDark: "#000000"
@@ -450,7 +456,7 @@ Singleton {
     readonly property bool blurLayersActive: false
     readonly property bool connectedSurfaceBlurEnabled: true
 
-    readonly property color floatingSurface: withAlpha(surfaceContainer, popupTransparency)
+    readonly property color floatingSurface: readableSurface
     readonly property color nestedSurface: withAlpha(surfaceContainerHigh, foregroundAlpha)
     readonly property real floatingWindowTransparency: popupTransparency
     readonly property bool floatingWindowForegroundLayers: foregroundLayers

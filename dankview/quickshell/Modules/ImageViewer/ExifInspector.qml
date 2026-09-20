@@ -11,7 +11,7 @@ Rectangle {
     width: 760
     height: 480
     radius: 20
-    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.97)
+    color: Theme.withAlpha(Theme.cardSurface, 0.97)
     border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.28)
     border.width: 1
 

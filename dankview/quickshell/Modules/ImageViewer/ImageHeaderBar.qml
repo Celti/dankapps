@@ -12,7 +12,7 @@ Rectangle {
     property var targetWindow: null
 
     height: 52
-    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.90)
+    color: Theme.withAlpha(Theme.cardSurface, 0.90)
     border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.25)
     border.width: 1
 
