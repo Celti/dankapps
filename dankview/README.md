@@ -1,6 +1,6 @@
 # DankView (`dview`)
 
-Image viewer for DankMaterialShell, inspired by GNOME Loupe.
+Image viewer for DankMaterialShell, inspired by GNOME Loupe. Built with Material 3 styling, DMS surface tokens, and seamless Quick Capture annotation integration.
 
 <p align="center">
   <img src="assets/preview.png" alt="DankView Preview" width="49%">
@@ -19,12 +19,14 @@ Image viewer for DankMaterialShell, inspired by GNOME Loupe.
 | | `0` | Fit to window (best fit) |
 | | `1` / `Ctrl + 1` | Actual size (1:1 pixel scale) |
 | | `Double Click` | Toggle 200% zoom / fit |
+| | `Scroll on Zoom FAB` | Zoom in / out; click to reset zoom |
 | **Transform** | `r` | Rotate clockwise (90°) |
 | | `l` / `Shift + r` | Rotate counter-clockwise (90°) |
 | | `h` / `m` / `Ctrl + M` | Flip horizontally |
 | | `v` | Flip vertically |
 | **Actions** | `c` / `Ctrl + C` | Copy image to clipboard |
 | | `x` / `Ctrl + X` | Toggle Crop tool |
+| | `a` | Annotate image in Quick Capture (via DMS IPC) |
 | | `s` / `Ctrl + S` | Save As / Export image |
 | | `p` / `Ctrl + P` | Print image |
 | | `w` / `Ctrl + W` | Set as wallpaper |

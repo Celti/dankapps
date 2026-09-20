@@ -6,7 +6,7 @@ A collection of Quickshell-based media viewer apps for DankMaterialShell (DMS) a
 
 | App | Description | Binary |
 |-----|-------------|--------|
-| [dankview](./dankview/) | Image viewer with EXIF inspector, crop, zoom | `dview` |
+| [dankview](./dankview/) | Image viewer with EXIF inspector, crop, zoom, and Quick Capture annotation | `dview` |
 | [dankvideo](./dankvideo/) | Video player with media inspector | `dplay` |
 
 ## Install an app
@@ -28,7 +28,7 @@ cd dankvideo && make install-user
 
 - [Quickshell](https://quickshell.outfoxxed.me/) — QML shell framework
 - Go 1.21+
-- `dms` CLI (optional, for clipboard and toast notifications)
+- `dms` CLI (optional, for clipboard, wallpaper, and Quick Capture annotations)
 
 ## Structure
 
