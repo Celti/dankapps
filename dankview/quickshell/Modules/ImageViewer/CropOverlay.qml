@@ -476,7 +476,7 @@ Item {
         border.width: 1
         z: 20
 
-        Text {
+        StyledText {
             id: dimText
             anchors.centerIn: parent
             text: {
@@ -486,9 +486,8 @@ Item {
                 const h = Math.round(cropH * scaleY);
                 return w + " × " + h + " px" + (aspectRatio !== "" ? (" • " + aspectRatio) : "");
             }
-            font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeSmall - 1
-            font.weight: Font.DemiBold
+            font.weight: Theme.fontWeightBold
             color: "white"
         }
     }
@@ -564,12 +563,11 @@ Item {
                             color: actionItem.isRecommended ? Theme.primary : Theme.surfaceText
                         }
 
-                        Text {
+                        StyledText {
                             Layout.fillWidth: true
                             text: actionItem.label
-                            font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeSmall
-                            font.weight: actionItem.isRecommended ? Font.DemiBold : Font.Medium
+                            font.weight: actionItem.isRecommended ? Theme.fontWeightBold : Theme.fontWeightMedium
                             color: Theme.surfaceText
                         }
 
@@ -579,13 +577,12 @@ Item {
                             implicitWidth: recText.implicitWidth + 8
                             radius: 4
                             color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.25)
-                            Text {
+                            StyledText {
                                 id: recText
                                 anchors.centerIn: parent
                                 text: "Rec"
-                                font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSizeSmall - 3
-                                font.weight: Font.Bold
+                                font.weight: Theme.fontWeightBold
                                 color: Theme.primary
                             }
                         }
@@ -644,12 +641,11 @@ Item {
                     radius: 8
                     color: promptCancelMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent"
 
-                    Text {
+                    StyledText {
                         anchors.centerIn: parent
                         text: "Cancel"
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeSmall
-                        font.weight: Font.Medium
+                        font.weight: Theme.fontWeightMedium
                         color: Theme.surfaceVariantText
                     }
 

@@ -79,10 +79,9 @@ Item {
                         size: 32
                         color: Theme.primary
                     }
-                    Text {
+                    StyledText {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Scanning pictures..."
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeMedium
                         color: Theme.surfaceVariantText
                     }
@@ -104,20 +103,18 @@ Item {
                         size: 40
                         color: ImageService.selectedCategory === "Favorites" ? Theme.error : Theme.surfaceVariantText
                     }
-                    Text {
+                    StyledText {
                         Layout.alignment: Qt.AlignHCenter
                         text: ImageService.selectedCategory === "Favorites" ? "No favorite images yet" : "No images found"
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeMedium
-                        font.weight: Font.DemiBold
+                        font.weight: Theme.fontWeightBold
                         color: Theme.surfaceText
                     }
-                    Text {
+                    StyledText {
                         Layout.alignment: Qt.AlignHCenter
                         text: ImageService.selectedCategory === "Favorites"
                             ? "Click the heart icon on any photo to add it to favorites"
                             : "Add images to your Pictures folder or choose another category"
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                     }
@@ -133,11 +130,10 @@ Item {
                     spacing: 12
 
                     // Date Header
-                    Text {
+                    StyledText {
                         text: modelData.dateGroup
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeMedium + 1
-                        font.weight: Font.DemiBold
+                        font.weight: Theme.fontWeightBold
                         color: Theme.surfaceText
                     }
 

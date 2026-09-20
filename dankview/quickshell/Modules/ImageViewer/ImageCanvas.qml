@@ -248,19 +248,17 @@ Item {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 6
 
-                Text {
+                StyledText {
                     Layout.alignment: Qt.AlignHCenter
                     text: "No Image Open"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeXLarge
-                    font.weight: Font.DemiBold
+                    font.weight: Theme.fontWeightBold
                     color: Theme.surfaceText
                 }
 
-                Text {
+                StyledText {
                     Layout.alignment: Qt.AlignHCenter
                     text: "Drag and drop an image here, or browse files"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeMedium
                     color: Theme.surfaceVariantText
                 }
@@ -286,11 +284,10 @@ Item {
                         color: Theme.primaryText
                     }
 
-                    Text {
+                    StyledText {
                         text: "Open Image (Ctrl+O)"
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeMedium
-                        font.weight: Font.DemiBold
+                        font.weight: Theme.fontWeightBold
                         color: Theme.primaryText
                     }
                 }

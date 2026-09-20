@@ -34,11 +34,10 @@ Item {
                 spacing: 14
                 visible: root.pinnedAlbums.length > 0
 
-                Text {
+                StyledText {
                     text: "Pinned Categories"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeMedium + 1
-                    font.weight: Font.DemiBold
+                    font.weight: Theme.fontWeightBold
                     color: Theme.surfaceText
                 }
 
@@ -64,11 +63,10 @@ Item {
                 spacing: 14
                 visible: root.customAlbums.length > 0
 
-                Text {
+                StyledText {
                     text: "Custom Categories"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeMedium + 1
-                    font.weight: Font.DemiBold
+                    font.weight: Theme.fontWeightBold
                     color: Theme.surfaceText
                 }
 
@@ -103,12 +101,11 @@ Item {
                         size: 40
                         color: Theme.surfaceVariantText
                     }
-                    Text {
+                    StyledText {
                         Layout.alignment: Qt.AlignHCenter
                         text: "No albums found"
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeMedium
-                        font.weight: Font.DemiBold
+                        font.weight: Theme.fontWeightBold
                         color: Theme.surfaceText
                     }
                 }

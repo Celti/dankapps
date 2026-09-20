@@ -79,11 +79,10 @@ Rectangle {
                         color: tabBtn.isActive ? Theme.primary : Theme.surfaceText
                     }
 
-                    Text {
+                    StyledText {
                         text: modelData.label
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeSmall + 1
-                        font.weight: tabBtn.isActive ? Font.DemiBold : Font.Normal
+                        font.weight: tabBtn.isActive ? Theme.fontWeightBold : Font.Normal
                         color: tabBtn.isActive ? Theme.primary : Theme.surfaceText
                     }
                 }
@@ -139,11 +138,10 @@ Rectangle {
                     color: Theme.primary
                 }
 
-                Text {
+                StyledText {
                     text: ImageService.gallerySelectedCount + " selected"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Font.DemiBold
+                    font.weight: Theme.fontWeightBold
                     color: Theme.primary
                 }
 

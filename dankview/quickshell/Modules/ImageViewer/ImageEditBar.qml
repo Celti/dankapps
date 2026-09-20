@@ -172,11 +172,10 @@ Rectangle {
                     color: Theme.onPrimary || Theme.primaryText
                 }
 
-                Text {
+                StyledText {
                     text: "Done"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Font.DemiBold
+                    font.weight: Theme.fontWeightBold
                     color: Theme.onPrimary || Theme.primaryText
                 }
             }
@@ -229,13 +228,12 @@ Rectangle {
                     : Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
                 border.width: 1
 
-                Text {
+                StyledText {
                     id: arLabel
                     anchors.centerIn: parent
                     text: modelData.label
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Font.Medium
+                    font.weight: Theme.fontWeightMedium
                     color: isSelected ? Theme.primary : Theme.surfaceText
                 }
 
@@ -287,11 +285,10 @@ Rectangle {
                 anchors.centerIn: parent
                 spacing: 4
                 DankIcon { name: "close"; size: 16; color: Theme.surfaceText }
-                Text {
+                StyledText {
                     text: "Cancel"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Font.Medium
+                    font.weight: Theme.fontWeightMedium
                     color: Theme.surfaceText
                 }
             }
@@ -325,11 +322,10 @@ Rectangle {
                 anchors.centerIn: parent
                 spacing: 4
                 DankIcon { name: "check"; size: 16; color: Theme.onPrimary || Theme.primaryText }
-                Text {
+                StyledText {
                     text: "Done"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Font.DemiBold
+                    font.weight: Theme.fontWeightBold
                     color: Theme.onPrimary || Theme.primaryText
                 }
             }

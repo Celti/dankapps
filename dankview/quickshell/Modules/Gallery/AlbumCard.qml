@@ -113,21 +113,19 @@ Item {
                     color: Theme.error
                 }
 
-                Text {
+                StyledText {
                     Layout.fillWidth: true
                     text: root.album ? root.album.name : ""
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeSmall + 1
-                    font.weight: Font.DemiBold
+                    font.weight: Theme.fontWeightBold
                     color: Theme.surfaceText
                     elide: Text.ElideRight
                 }
             }
 
-            Text {
+            StyledText {
                 Layout.fillWidth: true
                 text: root.album ? (root.album.totalCount + " photos") : ""
-                font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeSmall - 1
                 color: Theme.surfaceVariantText
                 elide: Text.ElideRight

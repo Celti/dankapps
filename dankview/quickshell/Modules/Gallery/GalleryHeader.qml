@@ -57,20 +57,18 @@ Item {
                                 color: isFavChip ? Theme.error : (isSelected ? Theme.primary : Theme.surfaceText)
                             }
 
-                            Text {
+                            StyledText {
                                 text: modelData
-                                font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSizeSmall
-                                font.weight: isSelected ? Font.DemiBold : Font.Medium
+                                font.weight: isSelected ? Theme.fontWeightBold : Theme.fontWeightMedium
                                 color: isSelected ? Theme.primary : Theme.surfaceText
                             }
 
-                            Text {
+                            StyledText {
                                 visible: isFavChip && ImageService.favoriteCount > 0
                                 text: "(" + ImageService.favoriteCount + ")"
-                                font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSizeSmall - 1
-                                font.weight: Font.Medium
+                                font.weight: Theme.fontWeightMedium
                                 color: isSelected ? Theme.primary : Theme.surfaceVariantText
                             }
                         }

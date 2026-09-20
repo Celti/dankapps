@@ -63,13 +63,12 @@ Rectangle {
 
                 DankIcon { name: root.cropRegion ? "crop" : "save"; size: 20; color: Theme.primary }
 
-                Text {
+                StyledText {
                     Layout.fillWidth: true
                     leftPadding: 8
                     text: root.cropRegion ? "Save Cropped Image" : "Save As / Export"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLarge
-                    font.weight: Font.DemiBold
+                    font.weight: Theme.fontWeightBold
                     color: Theme.surfaceText
                 }
 
@@ -81,9 +80,8 @@ Rectangle {
             }
 
             // Destination row
-            Text {
+            StyledText {
                 text: "Destination"
-                font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceVariantText
             }
@@ -102,10 +100,9 @@ Rectangle {
                     anchors.rightMargin: 6
                     spacing: 8
 
-                    Text {
+                    StyledText {
                         Layout.fillWidth: true
                         text: root.getDisplayDestPath()
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceText
                         elide: Text.ElideMiddle
@@ -124,9 +121,8 @@ Rectangle {
             }
 
             // Format selector
-            Text {
+            StyledText {
                 text: "Format"
-                font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceVariantText
             }
@@ -149,12 +145,11 @@ Rectangle {
                             : Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
                         border.width: 1
 
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: modelData
-                            font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeSmall
-                            font.weight: Font.Medium
+                            font.weight: Theme.fontWeightMedium
                             color: formatSelector.currentFormat === modelData ? Theme.primary : Theme.surfaceText
                         }
 
@@ -180,18 +175,16 @@ Rectangle {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    Text {
+                    StyledText {
                         text: "Quality"
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                     }
                     Item { Layout.fillWidth: true }
-                    Text {
+                    StyledText {
                         text: qualitySlider.value + "%"
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeSmall
-                        font.weight: Font.Medium
+                        font.weight: Theme.fontWeightMedium
                         color: Theme.surfaceText
                     }
                 }
@@ -212,10 +205,9 @@ Rectangle {
             RowLayout {
                 Layout.fillWidth: true
 
-                Text {
+                StyledText {
                     Layout.fillWidth: true
                     text: "Strip metadata"
-                    font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
                 }
@@ -256,12 +248,11 @@ Rectangle {
                     color: cancelMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerLow
                     border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.4)
                     border.width: 1
-                    Text {
+                    StyledText {
                         anchors.centerIn: parent
                         text: "Cancel"
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeSmall
-                        font.weight: Font.Medium
+                        font.weight: Theme.fontWeightMedium
                         color: Theme.surfaceText
                     }
                     MouseArea {
@@ -279,12 +270,11 @@ Rectangle {
                     color: saveMouse.containsMouse
                         ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.85)
                         : Theme.primary
-                    Text {
+                    StyledText {
                         anchors.centerIn: parent
                         text: "Save"
-                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeSmall
-                        font.weight: Font.DemiBold
+                        font.weight: Theme.fontWeightBold
                         color: Theme.primaryText
                     }
                     MouseArea {

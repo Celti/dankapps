@@ -66,12 +66,11 @@ Rectangle {
             color: Theme.primary
         }
 
-        Text {
+        StyledText {
             Layout.fillWidth: true
             text: title
-            font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeMedium
-            font.weight: Font.DemiBold
+            font.weight: Theme.fontWeightBold
             color: Theme.primary
         }
     }
@@ -85,22 +84,21 @@ Rectangle {
         Layout.fillWidth: true
         spacing: 12
 
-        Text {
+        StyledText {
             Layout.preferredWidth: 110
             text: label
-            font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeSmall
-            font.weight: Font.Medium
+            font.weight: Theme.fontWeightMedium
             color: Theme.surfaceVariantText
             elide: Text.ElideRight
         }
 
-        Text {
+        StyledText {
             Layout.fillWidth: true
             text: value
             font.family: isMono ? Theme.monoFontFamily : Theme.fontFamily
             font.pixelSize: Theme.fontSizeSmall
-            font.weight: Font.Medium
+            font.weight: Theme.fontWeightMedium
             color: Theme.surfaceText
             wrapMode: Text.WrapAnywhere
             elide: Text.ElideRight
@@ -131,11 +129,10 @@ Rectangle {
                 color: Theme.primary
             }
 
-            Text {
+            StyledText {
                 text: chip.label
-                font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeSmall
-                font.weight: Font.Medium
+                font.weight: Theme.fontWeightMedium
                 color: Theme.surfaceText
             }
         }
@@ -162,12 +159,11 @@ Rectangle {
         border.color: borderColor
         border.width: borderColor !== "transparent" ? 1 : 0
 
-        Text {
+        StyledText {
             id: badgeText
             anchors.centerIn: parent
-            font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeSmall - 1
-            font.weight: Font.Medium
+            font.weight: Theme.fontWeightMedium
             color: textColor
         }
     }
@@ -187,21 +183,19 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 2
 
-            Text {
+            StyledText {
                 Layout.alignment: Qt.AlignHCenter
                 text: label
-                font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeSmall - 2
                 font.weight: Font.Normal
                 color: Theme.surfaceVariantText
             }
 
-            Text {
+            StyledText {
                 Layout.alignment: Qt.AlignHCenter
                 text: value
-                font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeSmall
-                font.weight: Font.DemiBold
+                font.weight: Theme.fontWeightBold
                 color: Theme.surfaceText
             }
         }
@@ -238,12 +232,11 @@ Rectangle {
                 color: Theme.primary
             }
 
-            Text {
+            StyledText {
                 Layout.fillWidth: true
                 text: "Image Details"
-                font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeLarge
-                font.weight: Font.DemiBold
+                font.weight: Theme.fontWeightBold
                 color: Theme.surfaceText
             }
 
@@ -311,21 +304,19 @@ Rectangle {
                                 Layout.fillWidth: true
                                 spacing: 2
 
-                                Text {
+                                StyledText {
                                     Layout.fillWidth: true
                                     text: ImageService.currentFileName || "Image"
-                                    font.family: Theme.fontFamily
                                     font.pixelSize: Theme.fontSizeMedium + 1
-                                    font.weight: Font.DemiBold
+                                    font.weight: Theme.fontWeightBold
                                     color: Theme.surfaceText
                                     elide: Text.ElideMiddle
                                     wrapMode: Text.WrapAnywhere
                                 }
 
-                                Text {
+                                StyledText {
                                     Layout.fillWidth: true
                                     text: ImageService.currentMeta.fileSizeText || ""
-                                    font.family: Theme.fontFamily
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: Theme.surfaceVariantText
                                 }
@@ -523,13 +514,12 @@ Rectangle {
                             anchors.margins: 14
                             spacing: 12
 
-                            Text {
+                            StyledText {
                                 Layout.fillWidth: true
                                 visible: text !== ""
                                 text: (ImageService.currentMeta.cameraMake ? ImageService.currentMeta.cameraMake + " " : "") + (ImageService.currentMeta.cameraModel || "")
-                                font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSizeMedium
-                                font.weight: Font.DemiBold
+                                font.weight: Theme.fontWeightBold
                                 color: Theme.surfaceText
                             }
 
