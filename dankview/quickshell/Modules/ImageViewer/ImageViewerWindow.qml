@@ -306,11 +306,6 @@ FloatingWindow {
                     anchors.fill: parent
                 }
 
-                // Floating status chips (counter + zoom) — bottom-left, auto-fade
-                CanvasStatusChips {
-                    z: 10
-                    visible: !ImageService.uiLocked
-                }
 
                 // Crop Overlay inside canvas container
                 CropOverlay {
@@ -518,6 +513,76 @@ FloatingWindow {
                     tooltipText: "Edit (E)"
                     tooltipSide: "left"
                     onClicked: ImageService.toggleEditMode()
+                }
+            }
+
+            // Material 3 Floating Zoom Action Button (M3 Extended FAB)
+            Rectangle {
+                id: zoomFab
+                anchors.left: parent.left
+                anchors.leftMargin: 28
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 28
+                implicitWidth: zoomContentRow.implicitWidth + 28
+                implicitHeight: 56
+                radius: 16
+                z: 60
+
+                readonly property bool shouldShow: !ImageService.galleryMode &&
+                                                   !ImageService.uiLocked &&
+                                                   ImageService.currentFilePath !== "" &&
+                                                   !ImageService.editMode &&
+                                                   !ImageService.cropMode &&
+                                                   !ImageService.saveMode &&
+                                                   !ImageService.inspectorOpen
+
+                visible: opacity > 0
+                opacity: shouldShow ? 1.0 : 0.0
+                scale: shouldShow ? (zoomMouse.pressed ? 0.94 : (zoomMouse.containsMouse ? 1.06 : 1.0)) : 0.8
+
+                color: zoomMouse.pressed
+                    ? Qt.darker(Theme.chipSurface, 1.15)
+                    : (zoomMouse.containsMouse ? Qt.lighter(Theme.chipSurface, 1.08) : Theme.withAlpha(Theme.chipSurface, 0.95))
+
+                border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
+                border.width: 1
+
+                Behavior on opacity { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
+                Behavior on scale { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
+                Behavior on color { ColorAnimation { duration: Theme.shorterDuration } }
+
+                RowLayout {
+                    id: zoomContentRow
+                    anchors.centerIn: parent
+                    spacing: 8
+
+                    DankIcon {
+                        name: "zoom_in"
+                        size: 22
+                        color: Theme.surfaceText
+                    }
+
+                    StyledText {
+                        text: Math.round(ImageService.zoom * 100) + "%"
+                        font.pixelSize: Theme.fontSizeMedium
+                        font.weight: Theme.fontWeightMedium
+                        color: Theme.surfaceText
+                    }
+                }
+
+                StateLayer {
+                    id: zoomMouse
+                    cornerRadius: 16
+                    stateColor: Theme.surfaceText
+                    tooltipText: "Scroll to zoom • Click to reset"
+                    tooltipSide: "top"
+                    onClicked: ImageService.resetZoom()
+                    onWheel: wheel => {
+                        if (wheel.angleDelta.y > 0)
+                            ImageService.zoomIn();
+                        else if (wheel.angleDelta.y < 0)
+                            ImageService.zoomOut();
+                    }
                 }
             }
 
