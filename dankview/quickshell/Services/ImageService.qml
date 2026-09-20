@@ -574,6 +574,17 @@ Singleton {
         }
     }
 
+    Process {
+        id: annotateProc
+        running: false
+        command: []
+        onExited: exitCode => {
+            if (exitCode !== 0) {
+                root.showToast("Failed to launch Quick Capture", true);
+            }
+        }
+    }
+
     function nextImage() {
         if (fileList.length <= 1) return;
         currentIndex = (currentIndex + 1) % fileList.length;
@@ -737,6 +748,12 @@ Singleton {
         if (!currentFilePath) return;
         printProc.command = ["lp", currentFilePath];
         printProc.running = true;
+    }
+
+    function annotateImage() {
+        if (!currentFilePath) return;
+        annotateProc.command = ["dms", "ipc", "call", "quickCapture", "openImage", currentFilePath, "edit"];
+        annotateProc.running = true;
     }
 
     function toggleEditMode() {

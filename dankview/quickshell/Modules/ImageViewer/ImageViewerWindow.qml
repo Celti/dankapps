@@ -88,6 +88,9 @@ FloatingWindow {
                         ImageService.selectAll();
                         event.accepted = true;
                     }
+                } else if (!ImageService.galleryMode && ImageService.currentFilePath !== "") {
+                    ImageService.annotateImage();
+                    event.accepted = true;
                 }
                 break;
             case Qt.Key_C:

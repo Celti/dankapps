@@ -125,6 +125,13 @@ Rectangle {
             onClicked: ImageService.toggleCropMode()
         }
 
+        // Group 4: Annotate in Quick Capture
+        BarButton {
+            iconName: "draw"
+            tooltipText: "Annotate in Quick Capture (A)"
+            onClicked: ImageService.annotateImage()
+        }
+
         BarSeparator {
             visible: ImageService.isAnimated
         }
