@@ -242,14 +242,16 @@ FloatingWindow {
             border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.4)
             border.width: window.maximized ? 0 : 1
 
-            // Top Header Bar (Classic DankView Header - consistent in both Viewer & Gallery modes)
-            ImageHeaderBar {
-                id: headerBar
-                windowControls: windowControls
-                targetWindow: window
+            // Top Header Bar — thin DankWindowHeader with centered title, expand & close
+            Rectangle {
+                id: headerBarBg
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
+                height: headerBar.implicitHeight
+                color: Theme.withAlpha(Theme.cardSurface, 0.90)
+                border.color: Theme.withAlpha(Theme.outlineVariant, 0.25)
+                border.width: 1
                 opacity: !ImageService.uiLocked ? 1.0 : 0.0
                 visible: opacity > 0
                 z: 40
@@ -260,6 +262,13 @@ FloatingWindow {
                         easing.type: Theme.standardEasing
                     }
                 }
+
+                ImageHeaderBar {
+                    id: headerBar
+                    windowControls: windowControls
+                    anchors.fill: parent
+                    onCloseRequested: Qt.quit()
+                }
             }
 
             // Gallery View (Shown when dankview opens without an image or when returned to gallery)
@@ -267,7 +276,7 @@ FloatingWindow {
                 id: galleryView
                 windowControls: windowControls
                 targetWindow: window
-                anchors.top: headerBar.bottom
+                anchors.top: headerBarBg.bottom
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -278,7 +287,7 @@ FloatingWindow {
             // Main Image Canvas Container (Rounded Viewport with Checkerboard)
             Rectangle {
                 id: canvasContainer
-                anchors.top: headerBar.bottom
+                anchors.top: headerBarBg.bottom
                 anchors.topMargin: 8
                 anchors.left: parent.left
                 anchors.leftMargin: 16
