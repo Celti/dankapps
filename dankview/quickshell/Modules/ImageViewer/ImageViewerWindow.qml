@@ -306,6 +306,12 @@ FloatingWindow {
                     anchors.fill: parent
                 }
 
+                // Floating status chips (counter + zoom) — bottom-left, auto-fade
+                CanvasStatusChips {
+                    z: 10
+                    visible: !ImageService.uiLocked
+                }
+
                 // Crop Overlay inside canvas container
                 CropOverlay {
                     id: cropOverlay
