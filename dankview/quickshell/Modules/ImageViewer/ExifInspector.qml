@@ -248,21 +248,11 @@ Rectangle {
                 buttonSize: 32
                 iconColor: Theme.error
                 tooltipText: "Move to Trash (Delete)"
-                tooltipSide: "bottom"
+                tooltipSide: "left"
                 onClicked: {
                     ImageService.inspectorOpen = false;
                     ImageService.moveToTrash();
                 }
-            }
-
-            DankActionButton {
-                iconName: "close"
-                iconSize: 18
-                buttonSize: 32
-                iconColor: Theme.surfaceText
-                tooltipText: "Close (I)"
-                tooltipSide: "left"
-                onClicked: ImageService.inspectorOpen = false
             }
         }
 
@@ -407,17 +397,6 @@ Rectangle {
                                 iconName: "print"
                                 label: "Print"
                                 onClicked: ImageService.printImage()
-                            }
-
-                            ActionChip {
-                                iconName: "delete"
-                                label: "Move to Trash"
-                                iconColor: Theme.error
-                                labelColor: Theme.error
-                                onClicked: {
-                                    ImageService.inspectorOpen = false;
-                                    ImageService.moveToTrash();
-                                }
                             }
                         }
                     }
