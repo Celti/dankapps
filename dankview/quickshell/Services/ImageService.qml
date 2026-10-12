@@ -48,7 +48,24 @@ Singleton {
     property bool galleryMode: currentFilePath === ""
     property string galleryTab: "gallery" // "gallery" | "albums"
     property string selectedCategory: "All"
+    property string searchQuery: ""
+    property string searchQueryDebounced: ""
+    property bool searchActive: false
     property var galleryData: null
+
+    Timer {
+        id: searchDebounce
+        interval: 180
+        repeat: false
+        onTriggered: root.searchQueryDebounced = (root.searchQuery || "").toLowerCase().trim()
+    }
+    onSearchQueryChanged: searchDebounce.restart()
+    onSearchActiveChanged: {
+        if (!searchActive) {
+            searchDebounce.stop()
+            searchQueryDebounced = ""
+        }
+    }
     property var galleryFavorites: ({})
     property var gallerySelectedFiles: ({})
     property bool isGalleryLoading: false
@@ -474,25 +491,52 @@ Singleton {
         running: false
         command: []
         stdout: StdioCollector {
-            onStreamFinished: {
-                root.isGalleryLoading = false;
-                try {
-                    const data = JSON.parse(text);
-                    if (data) {
-                        root.galleryData = data;
+                onStreamFinished: {
+                    root.isGalleryLoading = false;
+                    try {
+                        const data = JSON.parse(text);
+                        if (data) {
+                            // Precompute lowercased fields for fast search (avoid per-keystroke toLowerCase)
+                            if (data.allImages) {
+                                for (let i = 0; i < data.allImages.length; i++) {
+                                    const img = data.allImages[i]
+                                    img._lowerName = (img.name || "").toLowerCase()
+                                    img._lowerPath = (img.path || "").toLowerCase()
+                                    img._lowerCategory = (img.category || "").toLowerCase()
+                                }
+                            }
+                            if (data.albums) {
+                                for (let i = 0; i < data.albums.length; i++) {
+                                    const a = data.albums[i]
+                                    a._lowerName = (a.name || "").toLowerCase()
+                                }
+                            }
+                            if (data.groups) {
+                                for (let gi = 0; gi < data.groups.length; gi++) {
+                                    const g = data.groups[gi]
+                                    if (g.images) {
+                                        for (let ii = 0; ii < g.images.length; ii++) {
+                                            const img = g.images[ii]
+                                            if (!img._lowerName) img._lowerName = (img.name || "").toLowerCase()
+                                            if (!img._lowerPath) img._lowerPath = (img.path || "").toLowerCase()
+                                        }
+                                    }
+                                }
+                            }
+                            root.galleryData = data;
+                        }
+                    } catch (e) {
+                        console.warn("Failed to parse gallery JSON:", e);
                     }
-                } catch (e) {
-                    console.warn("Failed to parse gallery JSON:", e);
                 }
             }
+            onExited: exitCode => {
+                root.isGalleryLoading = false;
+            }
         }
-        onExited: exitCode => {
-            root.isGalleryLoading = false;
-        }
-    }
 
-    Process {
-        id: trashProc
+        Process {
+            id: trashProc
         running: false
         command: []
         onExited: exitCode => {

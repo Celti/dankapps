@@ -2,221 +2,206 @@ import QtQuick
 import QtQuick.Layouts
 import qs.Common
 import qs.Services
+import qs.DankCommon.Common
 import qs.DankCommon.Widgets
 
-Rectangle {
+Item {
     id: root
 
     readonly property bool isSelectionMode: ImageService.gallerySelectedCount > 0
 
-    implicitHeight: 46
-    implicitWidth: (isSelectionMode ? selectionRow.implicitWidth : navRow.implicitWidth) + 24
-    radius: 23
-    color: Theme.withAlpha(Theme.chipSurface, 0.95)
-    border.color: isSelectionMode
-        ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.40)
-        : Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.28)
-    border.width: 1
-    clip: true
+    // M3E toolbar height = buttonHeightM (56) for expressive
+    implicitHeight: Style.buttonHeightM
+    implicitWidth: isSelectionMode ? selectionPill.implicitWidth : navGroup.implicitWidth
 
     Behavior on implicitWidth {
-        NumberAnimation {
-            duration: Theme.shortDuration
-            easing.type: Theme.standardEasing
-        }
-    }
-    Behavior on border.color {
-        ColorAnimation {
-            duration: Theme.shortDuration
+        enabled: !Style.reduceMotion && Style.currentAnimationSpeed !== Style.AnimationSpeed.None
+        DankAnim {
+            duration: Style.expressiveDurations.expressiveDefaultSpatial
+            easing.bezierCurve: Style.expressiveCurves.expressiveDefaultSpatial
         }
     }
 
-    // Navigation Tabs (Shown when 0 images selected)
-    RowLayout {
-        id: navRow
+    // === Navigation (no selection) - M3E Connected Button Group ===
+    DankButtonGroup {
+        id: navGroup
         anchors.centerIn: parent
-        spacing: 6
+        model: [
+            { text: "Gallery", icon: "photo_library" },
+            { text: "Albums",  icon: "collections_bookmark" }
+        ]
+        currentIndex: ImageService.galleryTab === "albums" ? 1 : 0
+        size: "small"
+        onSelectionChanged: (index, selected) => {
+            if (selected) ImageService.galleryTab = index === 0 ? "gallery" : "albums"
+        }
         visible: opacity > 0
         opacity: root.isSelectionMode ? 0.0 : 1.0
         scale: root.isSelectionMode ? 0.92 : 1.0
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
+            DankAnim {
+                duration: Style.expressiveDurations.expressiveEffects
+                easing.bezierCurve: Style.expressiveCurves.expressiveEffects
             }
         }
         Behavior on scale {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
-            }
-        }
-
-        Repeater {
-            model: [
-                { id: "gallery", label: "Gallery", icon: "photo_library" },
-                { id: "albums",  label: "Albums",  icon: "collections_bookmark" }
-            ]
-
-            delegate: Rectangle {
-                id: tabBtn
-                readonly property bool isActive: ImageService.galleryTab === modelData.id
-                implicitHeight: 38
-                implicitWidth: 110
-                radius: 19
-                color: isActive ? Theme.primaryContainer : (tabMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent")
-
-                Behavior on color { ColorAnimation { duration: Theme.shortDuration } }
-
-                RowLayout {
-                    anchors.centerIn: parent
-                    spacing: 6
-
-                    DankIcon {
-                        name: modelData.icon
-                        size: 20
-                        color: tabBtn.isActive ? Theme.primary : Theme.surfaceText
-                    }
-
-                    StyledText {
-                        text: modelData.label
-                        font.pixelSize: Theme.fontSizeSmall + 1
-                        font.weight: tabBtn.isActive ? Theme.fontWeightBold : Font.Normal
-                        color: tabBtn.isActive ? Theme.primary : Theme.surfaceText
-                    }
-                }
-
-                MouseArea {
-                    id: tabMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: ImageService.galleryTab = modelData.id
-                }
+            DankAnim {
+                duration: Style.expressiveDurations.expressiveFastSpatial
+                easing.bezierCurve: Style.expressiveCurves.expressiveFastSpatial
             }
         }
     }
 
-    // Selection Action Toolbar (Morphs in when 1 or more images are selected)
-    RowLayout {
-        id: selectionRow
+    // === Selection Toolbar — M3 Expressive ===
+    // Pill container with elevated tonal surface
+    Rectangle {
+        id: selectionPill
         anchors.centerIn: parent
-        spacing: 8
+        implicitHeight: Style.buttonHeightM
+        implicitWidth: selectionRow.implicitWidth + Style.spacingM * 2
+        radius: Style.cornerRadiusXL
+        color: Style.foregroundColor(Style.surfaceContainerHigh, false)
+        border.color: Style.withAlpha(Style.primary, 0.10)
+        border.width: root.isSelectionMode ? 1 : 0
         visible: opacity > 0
         opacity: root.isSelectionMode ? 1.0 : 0.0
-        scale: root.isSelectionMode ? 1.0 : 0.92
+        scale: root.isSelectionMode ? 1.0 : 0.94
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
+            DankAnim {
+                duration: Style.expressiveDurations.expressiveEffects
+                easing.bezierCurve: Style.expressiveCurves.expressiveEffects
             }
         }
         Behavior on scale {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
+            DankAnim {
+                duration: Style.expressiveDurations.expressiveFastSpatial
+                easing.bezierCurve: Style.expressiveCurves.expressiveFastSpatial
+            }
+        }
+        Behavior on border.color {
+            DankColorAnim {
+                duration: Style.expressiveDurations.expressiveEffects
+                easing.bezierCurve: Style.expressiveCurves.expressiveEffects
             }
         }
 
-        // Selected Count Badge + Dismiss Button
-        Rectangle {
-            implicitHeight: 34
-            implicitWidth: countInner.implicitWidth + 16
-            radius: 17
-            color: Theme.primaryContainer
+        ElevationShadow {
+            anchors.fill: parent
+            z: -1
+            targetRadius: parent.radius
+            targetColor: parent.color
+            level: Style.elevationLevel2
+            visible: root.isSelectionMode
+        }
 
-            RowLayout {
-                id: countInner
-                anchors.centerIn: parent
-                spacing: 6
+        RowLayout {
+            id: selectionRow
+            anchors.centerIn: parent
+            spacing: Style.spacingS
 
-                DankIcon {
-                    name: "check_circle"
-                    size: 18
-                    color: Theme.primary
+            // Leading count chip — M3E tonal chip
+            Rectangle {
+                id: countChip
+                implicitHeight: Style.buttonHeightXS
+                implicitWidth: countRow.implicitWidth + Style.spacingM * 2
+                radius: Style.fullRadius(height, height)
+                color: Style.primaryContainer
+
+                RowLayout {
+                    id: countRow
+                    anchors.centerIn: parent
+                    spacing: Style.spacingXS
+
+                    DankIcon {
+                        name: "check_circle"
+                        size: 18
+                        color: Style.onPrimaryContainer
+                    }
+                    StyledText {
+                        text: ImageService.gallerySelectedCount + " selected"
+                        font.pixelSize: Style.fontSizeSmall
+                        font.weight: Style.fontWeightMedium
+                        color: Style.onPrimaryContainer
+                    }
+                    DankIcon {
+                        name: "close"
+                        size: 14
+                        color: Style.onPrimaryContainer
+                        opacity: 0.85
+                    }
                 }
 
-                StyledText {
-                    text: ImageService.gallerySelectedCount + " selected"
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Theme.fontWeightBold
-                    color: Theme.primary
-                }
-
-                DankIcon {
-                    name: "close"
-                    size: 16
-                    color: Theme.primary
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: ImageService.clearSelection()
                 }
             }
 
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: ImageService.clearSelection()
+            // Divider — M3 outlineVariant 12%
+            Rectangle {
+                implicitWidth: Style.dividerWidth
+                implicitHeight: 24
+                color: Style.outlineVariant
+                opacity: 0.30
             }
-        }
 
-        // Thin Separator
-        Rectangle {
-            implicitWidth: 1
-            implicitHeight: 20
-            color: Theme.outlineVariant
-            opacity: 0.35
-        }
+            // Action group 1
+            DankIconButton {
+                iconName: ImageService.isAllSelected ? "deselect" : "select_all"
+                size: "s"
+                variant: ImageService.isAllSelected ? "tonal" : "standard"
+                tooltipText: ImageService.isAllSelected ? "Deselect All (Ctrl+A)" : "Select All (Ctrl+A)"
+                Accessible.name: tooltipText
+                onClicked: ImageService.selectAll()
+            }
 
-        // Action: Select All / Deselect All
-        DankActionButton {
-            iconName: ImageService.isAllSelected ? "deselect" : "select_all"
-            iconSize: 18
-            buttonSize: 34
-            tooltipText: ImageService.isAllSelected ? "Deselect All (Ctrl+A)" : "Select All (Ctrl+A)"
-            tooltipSide: "top"
-            onClicked: ImageService.selectAll()
-        }
+            DankIconButton {
+                iconName: "favorite"
+                size: "s"
+                variant: "standard"
+                tooltipText: "Favorite Selected"
+                onClicked: ImageService.toggleFavoriteSelected()
+            }
 
-        // Action: Favorite / Unfavorite Selected
-        DankActionButton {
-            iconName: "favorite"
-            iconSize: 18
-            buttonSize: 34
-            tooltipText: "Favorite Selected"
-            tooltipSide: "top"
-            onClicked: ImageService.toggleFavoriteSelected()
-        }
+            // Divider between groups
+            Rectangle {
+                implicitWidth: Style.dividerWidth
+                implicitHeight: 24
+                color: Style.outlineVariant
+                opacity: 0.20
+            }
 
-        // Action: Copy / Clipboard
-        DankActionButton {
-            iconName: "content_copy"
-            iconSize: 18
-            buttonSize: 34
-            tooltipText: "Copy to Clipboard (Ctrl+C)"
-            tooltipSide: "top"
-            onClicked: ImageService.copySelectedFiles()
-        }
+            // Action group 2
+            DankIconButton {
+                iconName: "content_copy"
+                size: "s"
+                variant: "standard"
+                tooltipText: "Copy to Clipboard (Ctrl+C)"
+                onClicked: ImageService.copySelectedFiles()
+            }
 
-        // Action: Open With
-        DankActionButton {
-            iconName: "open_in_new"
-            iconSize: 18
-            buttonSize: 34
-            tooltipText: "Open With System App"
-            tooltipSide: "top"
-            onClicked: ImageService.openSelectedWith()
-        }
+            DankIconButton {
+                iconName: "open_in_new"
+                size: "s"
+                variant: "standard"
+                tooltipText: "Open With"
+                onClicked: ImageService.openSelectedWith()
+            }
 
-        // Action: Delete / Move to Trash
-        DankActionButton {
-            iconName: "delete"
-            iconSize: 18
-            buttonSize: 34
-            iconColor: Theme.error
-            tooltipText: "Move to Trash (Delete)"
-            tooltipSide: "top"
-            onClicked: ImageService.trashSelected()
+            // Destructive — M3E tonal errorContainer
+            DankIconButton {
+                iconName: "delete"
+                size: "s"
+                variant: "tonal"
+                containerColor: Style.errorContainer
+                contentColor: Style.onErrorContainer
+                stateColor: Style.error
+                tooltipText: "Move to Trash (Delete)"
+                onClicked: ImageService.trashSelected()
+            }
         }
     }
 }

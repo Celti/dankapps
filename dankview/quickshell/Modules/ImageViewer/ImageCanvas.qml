@@ -111,7 +111,7 @@ Item {
                 anchors.centerIn: parent
                 source: ImageService.previewThumbnail ? ("file://" + ImageService.previewThumbnail) : ""
                 fillMode: Image.PreserveAspectFit
-                asynchronous: false
+                asynchronous: true
                 cache: true
                 visible: opacity > 0
                 opacity: (imageElement.status === Image.Ready) ? 0.0 : 1.0
@@ -138,7 +138,7 @@ Item {
                 fillMode: Image.PreserveAspectFit
                 smooth: true
                 mipmap: true
-                cache: false
+                cache: true
                 opacity: status === Image.Ready ? 1.0 : (previewImage.visible ? 0.0 : 1.0)
 
                 Behavior on opacity {

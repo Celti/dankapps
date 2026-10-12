@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Shapes
 import qs.Common
 import qs.Services
 import qs.DankCommon.Widgets
@@ -7,7 +6,7 @@ import qs.DankCommon.Widgets
 Item {
     id: root
 
-    property var flickable: null
+    property var flickable: null // kept for compatibility, unused with ListView virtualization
     property var imageItem: null
     property real tileSize: 160
 
@@ -18,31 +17,10 @@ Item {
     readonly property bool isFav: imageItem ? ImageService.isFavorite(imageItem.path) : false
     readonly property bool isSelectionMode: ImageService.gallerySelectedCount > 0
 
-    // Viewport visibility calculation to avoid loading off-screen images in large galleries
-    readonly property real itemContentY: flickable ? root.mapToItem(flickable.contentItem, 0, 0).y : 0
-    readonly property bool inView: {
-        if (!flickable) return true;
-        const topBound = flickable.contentY - 600;
-        const bottomBound = flickable.contentY + flickable.height + 600;
-        return itemContentY + height >= topBound && itemContentY <= bottomBound;
-    }
-
-    property bool hasLoaded: false
-    onInViewChanged: {
-        if (inView && !hasLoaded) {
-            hasLoaded = true;
-        }
-    }
-    Component.onCompleted: {
-        if (inView) {
-            hasLoaded = true;
-        }
-    }
-
     Rectangle {
         id: card
         anchors.fill: parent
-        radius: Theme.cornerRadiusM
+        radius: 0
         color: Theme.surfaceContainerHigh
 
         scale: thumbMouse.containsMouse ? 1.02 : 1.0
@@ -55,72 +33,19 @@ Item {
             asynchronous: true
             cache: true
             source: {
-                if (!root.imageItem || !root.hasLoaded) return "";
-                if (root.imageItem.thumbnail) return "file://" + root.imageItem.thumbnail;
-                return "file://" + root.imageItem.path;
+                if (!root.imageItem) return ""
+                if (root.imageItem.thumbnail) return "file://" + root.imageItem.thumbnail
+                return "file://" + root.imageItem.path
             }
             sourceSize.width: 256
             sourceSize.height: 256
         }
 
-        // Corner mask overlay to cleanly round the image corners without ShaderEffect / FBO overhead
-        Shape {
-            anchors.fill: parent
-            asynchronous: false
-            visible: thumbImg.status === Image.Ready
-
-            ShapePath {
-                fillColor: Theme.surfaceContainerLowest
-                strokeColor: "transparent"
-                strokeWidth: 0
-
-                // Top-Left corner
-                startX: 0; startY: 0
-                PathLine { x: card.radius; y: 0 }
-                PathArc {
-                    x: 0; y: card.radius
-                    radiusX: card.radius; radiusY: card.radius
-                    direction: PathArc.Counterclockwise
-                }
-                PathLine { x: 0; y: 0 }
-
-                // Top-Right corner
-                PathMove { x: card.width; y: 0 }
-                PathLine { x: card.width - card.radius; y: 0 }
-                PathArc {
-                    x: card.width; y: card.radius
-                    radiusX: card.radius; radiusY: card.radius
-                    direction: PathArc.Clockwise
-                }
-                PathLine { x: card.width; y: 0 }
-
-                // Bottom-Right corner
-                PathMove { x: card.width; y: card.height }
-                PathLine { x: card.width; y: card.height - card.radius }
-                PathArc {
-                    x: card.width - card.radius; y: card.height
-                    radiusX: card.radius; radiusY: card.radius
-                    direction: PathArc.Clockwise
-                }
-                PathLine { x: card.width; y: card.height }
-
-                // Bottom-Left corner
-                PathMove { x: 0; y: card.height }
-                PathLine { x: card.radius; y: card.height }
-                PathArc {
-                    x: 0; y: card.height - card.radius
-                    radiusX: card.radius; radiusY: card.radius
-                    direction: PathArc.Clockwise
-                }
-                PathLine { x: 0; y: card.height }
-            }
-        }
-
-        // Selection Border & Highlight Tint Overlay (drawn on top of image)
+        // Selection Border & Highlight Tint Overlay — square (no clip)
         Rectangle {
             id: selectionOverlay
             anchors.fill: parent
-            radius: card.radius
+            radius: 0
             color: root.isSelected
                 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, thumbMouse.containsMouse ? 0.22 : 0.16)
                 : "transparent"
@@ -133,7 +58,7 @@ Item {
             Behavior on border.color { ColorAnimation { duration: Theme.shortDuration } }
         }
 
-        // Dark gradient overlay for icons visibility on light photos
+        // Dark gradient overlay for icons visibility
         Rectangle {
             anchors.top: parent.top
             anchors.left: parent.left
@@ -172,9 +97,7 @@ Item {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    if (root.imageItem) {
-                        ImageService.toggleSelect(root.imageItem.path);
-                    }
+                    if (root.imageItem) ImageService.toggleSelect(root.imageItem.path)
                 }
             }
         }
@@ -203,9 +126,7 @@ Item {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    if (root.imageItem) {
-                        ImageService.toggleFavorite(root.imageItem.path);
-                    }
+                    if (root.imageItem) ImageService.toggleFavorite(root.imageItem.path)
                 }
             }
         }
@@ -219,11 +140,8 @@ Item {
             z: -1
             onClicked: {
                 if (root.imageItem) {
-                    if (root.isSelectionMode) {
-                        ImageService.toggleSelect(root.imageItem.path);
-                    } else {
-                        ImageService.openImageFromGallery(root.imageItem.path, root.imageItem.thumbnail || "");
-                    }
+                    if (root.isSelectionMode) ImageService.toggleSelect(root.imageItem.path)
+                    else ImageService.openImageFromGallery(root.imageItem.path, root.imageItem.thumbnail || "")
                 }
             }
         }
