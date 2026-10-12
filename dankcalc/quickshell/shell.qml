@@ -1,0 +1,26 @@
+//@ pragma Env QSG_RENDER_LOOP=threaded
+//@ pragma Env QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+//@ pragma Env QT_QUICK_CONTROLS_STYLE=Material
+//@ pragma UseQApplication
+//@ pragma AppId com.danklinux.dankcalc
+
+import QtQuick
+import Quickshell
+import qs.Common
+import qs.Services
+import qs.Modules.Calculator
+import qs.DankCommon.Common as DC
+
+ShellRoot {
+    id: root
+
+    Component.onCompleted: {
+        DC.Style.theme = Theme;
+        DC.Style.settings = SettingsData;
+        DC.Paths.backend = Paths;
+    }
+
+    CalculatorWindow {
+        id: calcWindow
+    }
+}

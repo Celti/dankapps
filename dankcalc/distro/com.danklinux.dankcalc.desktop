@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=DankCalc
+GenericName=Calculator
+Comment=Material 3 Expressive Calculator for Linux and DankMaterialShell
+Exec=dcalc %u
+Icon=accessories-calculator
+Terminal=false
+Type=Application
+Categories=Utility;Calculator;Qt;
+Keywords=calculator;math;scientific;dank;
+StartupNotify=true
+StartupWMClass=com.danklinux.dankcalc

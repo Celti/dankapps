@@ -1,0 +1,261 @@
+import QtQuick
+import QtQuick.Layouts
+import qs.Common
+import qs.Services
+import qs.DankCommon.Common
+import qs.DankCommon.Widgets
+import "UnitConverterLogic.js" as ConvLogic
+
+Item {
+    id: root
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: Theme.spacingM
+        spacing: Theme.spacingS
+
+        // ── VALUE & UNIT CONVERSION DISPLAY CARDS ────────────────────────────
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingS
+
+            // "From" Value Card
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 64
+                radius: Theme.cornerRadiusSmall
+                color: Theme.surfaceContainerHigh
+                border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.25)
+                border.width: 1
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: Theme.spacingM
+                    anchors.rightMargin: Theme.spacingM
+                    spacing: Theme.spacingM
+
+                    // Unit Picker Button
+                    Rectangle {
+                        implicitHeight: 32
+                        implicitWidth: fromUnitRow.implicitWidth + Theme.spacingM * 1.5
+                        radius: 16
+                        color: fromUnitMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerLowest
+
+                        RowLayout {
+                            id: fromUnitRow
+                            anchors.centerIn: parent
+                            spacing: 4
+
+                            StyledText {
+                                text: ConvLogic.getUnitName(CalculatorService.converterCategory, CalculatorService.converterFromUnit)
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.weight: Font.Medium
+                                color: Theme.primary
+                                elide: Text.ElideRight
+                                Layout.maximumWidth: 120
+                            }
+
+                            DankIcon {
+                                name: "arrow_drop_down"
+                                size: 16
+                                color: Theme.primary
+                            }
+                        }
+
+                        MouseArea {
+                            id: fromUnitMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: CalculatorService.converterPickerTarget = "from"
+                        }
+                    }
+
+                    // Numeric Input
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: CalculatorService.converterFromValue
+                        font.pixelSize: 24
+                        font.weight: Font.Medium
+                        color: Theme.surfaceText
+                        horizontalAlignment: Text.AlignRight
+                        elide: Text.ElideLeft
+                    }
+                }
+            }
+
+            // "To" Value Card (Click to copy result)
+            Rectangle {
+                id: toCard
+                Layout.fillWidth: true
+                implicitHeight: 64
+                radius: Theme.cornerRadiusSmall
+                color: toCardMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainer
+                border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.4)
+                border.width: 1
+
+                MouseArea {
+                    id: toCardMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    acceptedButtons: Qt.LeftButton
+                    onClicked: {
+                        CalculatorService.copyConverterResult();
+                    }
+                }
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: Theme.spacingM
+                    anchors.rightMargin: Theme.spacingM
+                    spacing: Theme.spacingM
+
+                    // Unit Picker Button
+                    Rectangle {
+                        id: toUnitButton
+                        z: 2
+                        implicitHeight: 32
+                        implicitWidth: toUnitRow.implicitWidth + Theme.spacingM * 1.5
+                        radius: 16
+                        color: toUnitMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerLowest
+
+                        RowLayout {
+                            id: toUnitRow
+                            anchors.centerIn: parent
+                            spacing: 4
+
+                            StyledText {
+                                text: ConvLogic.getUnitName(CalculatorService.converterCategory, CalculatorService.converterToUnit)
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.weight: Font.Medium
+                                color: Theme.primary
+                                elide: Text.ElideRight
+                                Layout.maximumWidth: 120
+                            }
+
+                            DankIcon {
+                                name: "arrow_drop_down"
+                                size: 16
+                                color: Theme.primary
+                            }
+                        }
+
+                        MouseArea {
+                            id: toUnitMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: CalculatorService.converterPickerTarget = "to"
+                        }
+                    }
+
+                    // Result Display
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: CalculatorService.converterToValue
+                        font.pixelSize: 24
+                        font.weight: Font.Bold
+                        color: Theme.primary
+                        horizontalAlignment: Text.AlignRight
+                        elide: Text.ElideLeft
+                    }
+                }
+            }
+        }
+
+        // ── CONVERTER KEYPAD ────────────────────────────────────────────────
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            GridLayout {
+                id: converterGrid
+                anchors.fill: parent
+                columns: 3
+                rowSpacing: 6
+                columnSpacing: 6
+
+                // Row 1: Actions
+                CalculatorButton {
+                    text: "C"
+                    backgroundColor: Theme.surfaceContainerHighest
+                    textColor: Theme.primary
+                    fontWeight: Font.Bold
+                    onClicked: CalculatorService.clearConverter()
+                }
+
+                CalculatorButton {
+                    iconName: "backspace"
+                    backgroundColor: Theme.surfaceContainerHighest
+                    textColor: Theme.surfaceText
+                    onClicked: CalculatorService.backspaceConverter()
+                }
+
+                CalculatorButton {
+                    iconName: "swap_vert"
+                    backgroundColor: Theme.primaryContainer
+                    textColor: Theme.onPrimaryContainer
+                    onClicked: CalculatorService.swapConverterUnits()
+                }
+
+                // Row 2: 7, 8, 9
+                CalculatorButton {
+                    text: "7"
+                    onClicked: CalculatorService.appendConverterDigit("7")
+                }
+                CalculatorButton {
+                    text: "8"
+                    onClicked: CalculatorService.appendConverterDigit("8")
+                }
+                CalculatorButton {
+                    text: "9"
+                    onClicked: CalculatorService.appendConverterDigit("9")
+                }
+
+                // Row 3: 4, 5, 6
+                CalculatorButton {
+                    text: "4"
+                    onClicked: CalculatorService.appendConverterDigit("4")
+                }
+                CalculatorButton {
+                    text: "5"
+                    onClicked: CalculatorService.appendConverterDigit("5")
+                }
+                CalculatorButton {
+                    text: "6"
+                    onClicked: CalculatorService.appendConverterDigit("6")
+                }
+
+                // Row 4: 1, 2, 3
+                CalculatorButton {
+                    text: "1"
+                    onClicked: CalculatorService.appendConverterDigit("1")
+                }
+                CalculatorButton {
+                    text: "2"
+                    onClicked: CalculatorService.appendConverterDigit("2")
+                }
+                CalculatorButton {
+                    text: "3"
+                    onClicked: CalculatorService.appendConverterDigit("3")
+                }
+
+                // Row 5: ±, 0, .
+                CalculatorButton {
+                    text: "±"
+                    backgroundColor: Theme.surfaceContainerHighest
+                    onClicked: CalculatorService.toggleConverterSign()
+                }
+                CalculatorButton {
+                    text: "0"
+                    onClicked: CalculatorService.appendConverterDigit("0")
+                }
+                CalculatorButton {
+                    text: "."
+                    onClicked: CalculatorService.appendConverterDecimal()
+                }
+            }
+        }
+    }
+}
