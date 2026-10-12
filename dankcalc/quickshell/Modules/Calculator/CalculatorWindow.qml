@@ -224,12 +224,18 @@ FloatingWindow {
                 anchors.fill: parent
                 spacing: 0
 
-                DankWindowHeader {
+                Item {
                     Layout.fillWidth: true
-                    controls: windowControls
-                    title: CalculatorService.currentMode === "converter" ? "Unit Converter" : "Calculator"
-                    showDivider: true
-                    onCloseRequested: Qt.quit()
+                    implicitHeight: header.implicitHeight
+
+                    DankWindowHeader {
+                        id: header
+                        anchors.fill: parent
+                        controls: windowControls
+                        title: CalculatorService.currentMode === "converter" ? "Unit Converter" : "Calculator"
+                        showDivider: true
+                        onCloseRequested: Qt.quit()
+                    }
 
                     Row {
                         anchors.left: parent.left
