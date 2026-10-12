@@ -11,6 +11,7 @@ Powered by a lightweight **Go** backend and a hardware-accelerated **Quickshell*
 - **Material 3 Expressive UI**: Smooth morphing shape transitions (circle to pill) and spring scale bounce feedback on keypress.
 - **Dynamic Theming**: Seamlessly inherits DankMaterialShell Matugen palettes, system fonts, and Dark/Light modes.
 - **Dual Mode (Standard & Scientific)**: Collapsible scientific drawer with trigonometric functions (`sin`, `cos`, `tan`), inverse modes (`asin`, `acos`, `atan`), angle units (`Rad` vs `Deg`), logarithms (`ln`, `log`), roots (`√`), powers (`^`), and factorials (`!`).
+- **Unit Converter Mode**: Real-time conversion across Length, Mass/Weight, Temperature, Area, Volume, Speed, Time, Data Storage, Energy, and Pressure.
 - **Live Evaluation**: Instant preview of math results as you type.
 - **Calculation History**: Recalls previous equations and answers with one click.
 - **Headless CLI Evaluator**: Run `dcalc -e "12 + 5 * 3"` directly from scripts or terminal.

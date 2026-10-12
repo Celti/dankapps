@@ -8,6 +8,7 @@ A collection of Quickshell-based media viewer apps for DankMaterialShell (DMS) a
 |-----|-------------|--------|
 | [dankview](./dankview/) | Image viewer with EXIF inspector, crop, zoom, and Quick Capture annotation | `dview` |
 | [dankvideo](./dankvideo/) | Video player with media inspector | `dplay` |
+| [dankcalc](./dankcalc/) | Material 3 expressive calculator with scientific drawer and history | `dcalc` |
 
 ## Install an app
 
@@ -22,6 +23,9 @@ cd dankview && make install-user
 
 # Or install dankvideo
 cd dankvideo && make install-user
+
+# Or install dankcalc
+cd dankcalc && make install-user
 ```
 
 ## Requirements
@@ -36,6 +40,7 @@ cd dankvideo && make install-user
 dankapps/
 ├── dankview/      # Image viewer
 ├── dankvideo/     # Video player
+├── dankcalc/      # Calculator
 └── go.work        # Go workspace (dev only)
 ```
 
