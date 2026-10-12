@@ -350,43 +350,7 @@ FloatingWindow {
                 }
             }
 
-            // Bottom Dock Tab (Details / EXIF Trigger)
-            Rectangle {
-                id: bottomDockTab
-                anchors.bottom: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 220
-                height: 18
-                radius: 9
-                color: bottomTabMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
-                border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.3)
-                border.width: 1
-                visible: !ImageService.galleryMode && !ImageService.uiLocked && ImageService.currentFilePath !== "" && !ImageService.inspectorOpen && !ImageService.editMode && !ImageService.cropMode
-                z: 50
 
-                Behavior on color { ColorAnimation { duration: Theme.shorterDuration } }
-
-                // Handle indicator line
-                Rectangle {
-                    id: bottomDockHandle
-                    anchors.centerIn: parent
-                    width: bottomTabMouse.containsMouse ? 50 : 38
-                    height: 4
-                    radius: 2
-                    color: bottomTabMouse.containsMouse ? Theme.primary : Theme.outlineVariant
-
-                    Behavior on width { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
-                    Behavior on color { ColorAnimation { duration: Theme.shortDuration } }
-                }
-
-                MouseArea {
-                    id: bottomTabMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: ImageService.toggleInspector()
-                }
-            }
 
             // Floating Lock Badge (shown only when UI is locked and hovered nearby)
             Item {
@@ -435,37 +399,15 @@ FloatingWindow {
                 }
             }
 
-            // Bottom Edit Toolbar (M3 Docked Tools)
+            // Edit Toolbar (Vertical Speed-Dial above FAB or Horizontal Crop Bar at bottom)
             ImageEditBar {
                 id: editBar
                 cropOverlay: cropOverlay
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 24
-                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.right: ImageService.cropMode ? undefined : editFab.right
+                anchors.horizontalCenter: ImageService.cropMode ? parent.horizontalCenter : undefined
+                anchors.bottom: ImageService.cropMode ? parent.bottom : editFab.top
+                anchors.bottomMargin: ImageService.cropMode ? 24 : 12
                 z: 60
-
-                readonly property bool shouldShow: !ImageService.galleryMode &&
-                                                   !ImageService.uiLocked &&
-                                                   ImageService.currentFilePath !== "" &&
-                                                   (ImageService.editMode || ImageService.cropMode) &&
-                                                   !ImageService.saveMode
-
-                visible: opacity > 0
-                opacity: shouldShow ? 1.0 : 0.0
-                scale: shouldShow ? 1.0 : 0.92
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-                }
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-                }
             }
 
             // Material 3 Floating Action Button (FAB)
@@ -483,20 +425,24 @@ FloatingWindow {
                 readonly property bool shouldShow: !ImageService.galleryMode &&
                                                    !ImageService.uiLocked &&
                                                    ImageService.currentFilePath !== "" &&
-                                                   !ImageService.editMode &&
                                                    !ImageService.cropMode &&
                                                    !ImageService.saveMode &&
                                                    !ImageService.inspectorOpen
+                readonly property bool isDimmed: ImageService.zoom > 1.05 && !fabMouse.containsMouse && !ImageService.editMode
 
                 visible: opacity > 0
-                opacity: shouldShow ? 1.0 : 0.0
+                opacity: shouldShow ? (isDimmed ? 0.35 : 1.0) : 0.0
                 scale: shouldShow ? (fabMouse.pressed ? 0.94 : (fabMouse.containsMouse ? 1.06 : 1.0)) : 0.8
 
-                color: fabMouse.pressed
-                    ? Qt.darker(Theme.primary, 1.15)
-                    : (fabMouse.containsMouse ? Qt.lighter(Theme.primary, 1.08) : Theme.primary)
+                color: ImageService.editMode
+                    ? Theme.surfaceContainerHighest
+                    : (fabMouse.pressed
+                        ? Qt.darker(Theme.primary, 1.15)
+                        : (fabMouse.containsMouse ? Qt.lighter(Theme.primary, 1.08) : Theme.primary))
 
-                border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
+                border.color: ImageService.editMode
+                    ? Theme.primary
+                    : Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
                 border.width: 1
 
                 Behavior on opacity { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
@@ -505,18 +451,90 @@ FloatingWindow {
 
                 DankIcon {
                     anchors.centerIn: parent
-                    name: "edit"
+                    name: ImageService.editMode ? "close" : "edit"
                     size: 24
-                    color: Theme.onPrimary || Theme.primaryText
+                    color: ImageService.editMode ? Theme.primary : (Theme.onPrimary || Theme.primaryText)
+
+                    Behavior on rotation {
+                        NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing }
+                    }
                 }
 
                 StateLayer {
                     id: fabMouse
                     cornerRadius: 16
-                    stateColor: Theme.onPrimary || Theme.primaryText
-                    tooltipText: "Edit (E)"
+                    stateColor: ImageService.editMode ? Theme.primary : (Theme.onPrimary || Theme.primaryText)
+                    tooltipText: ImageService.editMode ? "Close Edit Menu (E / Esc)" : "Edit (E)"
                     tooltipSide: "left"
                     onClicked: ImageService.toggleEditMode()
+                }
+            }
+
+            // Material 3 Floating Actions Pill (Favorite & Info)
+            Rectangle {
+                id: floatingActionsPill
+                anchors.right: editFab.left
+                anchors.rightMargin: 12
+                anchors.verticalCenter: editFab.verticalCenter
+                implicitHeight: 56
+                implicitWidth: actionRow.implicitWidth + 24
+                radius: 16
+                z: 60
+
+                readonly property bool shouldShow: !ImageService.galleryMode &&
+                                                   !ImageService.uiLocked &&
+                                                   ImageService.currentFilePath !== "" &&
+                                                   !ImageService.cropMode &&
+                                                   !ImageService.saveMode &&
+                                                   !ImageService.inspectorOpen
+                readonly property bool isDimmed: ImageService.zoom > 1.05 && !pillHover.hovered
+
+                visible: opacity > 0
+                opacity: shouldShow ? (isDimmed ? 0.35 : 1.0) : 0.0
+                scale: shouldShow ? 1.0 : 0.8
+                color: Theme.withAlpha(Theme.chipSurface, 0.95)
+                border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
+                border.width: 1
+
+                Behavior on opacity { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
+                Behavior on scale { NumberAnimation { duration: Theme.shortDuration; easing.type: Theme.standardEasing } }
+
+                HoverHandler {
+                    id: pillHover
+                }
+
+                RowLayout {
+                    id: actionRow
+                    anchors.centerIn: parent
+                    spacing: 8
+
+                    DankActionButton {
+                        readonly property bool isFav: ImageService.isFavorite(ImageService.currentFilePath)
+                        iconName: isFav ? "favorite" : "favorite_border"
+                        iconSize: 22
+                        buttonSize: 40
+                        iconColor: isFav ? Theme.error : Theme.surfaceText
+                        tooltipText: isFav ? "Remove from Favorites (F)" : "Add to Favorites (F)"
+                        tooltipSide: "top"
+                        onClicked: ImageService.toggleFavorite(ImageService.currentFilePath)
+                    }
+
+                    Rectangle {
+                        implicitWidth: 1
+                        implicitHeight: 24
+                        color: Theme.outlineVariant
+                        opacity: 0.35
+                    }
+
+                    DankActionButton {
+                        iconName: "info"
+                        iconSize: 22
+                        buttonSize: 40
+                        iconColor: ImageService.inspectorOpen ? Theme.primary : Theme.surfaceText
+                        tooltipText: "Image Info / EXIF (I)"
+                        tooltipSide: "top"
+                        onClicked: ImageService.toggleInspector()
+                    }
                 }
             }
 
@@ -535,13 +553,13 @@ FloatingWindow {
                 readonly property bool shouldShow: !ImageService.galleryMode &&
                                                    !ImageService.uiLocked &&
                                                    ImageService.currentFilePath !== "" &&
-                                                   !ImageService.editMode &&
                                                    !ImageService.cropMode &&
                                                    !ImageService.saveMode &&
                                                    !ImageService.inspectorOpen
+                readonly property bool isDimmed: ImageService.zoom > 1.05 && !zoomMouse.containsMouse
 
                 visible: opacity > 0
-                opacity: shouldShow ? 1.0 : 0.0
+                opacity: shouldShow ? (isDimmed ? 0.35 : 1.0) : 0.0
                 scale: shouldShow ? (zoomMouse.pressed ? 0.94 : (zoomMouse.containsMouse ? 1.06 : 1.0)) : 0.8
 
                 color: zoomMouse.pressed

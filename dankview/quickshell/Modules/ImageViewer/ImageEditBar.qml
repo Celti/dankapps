@@ -3,342 +3,355 @@ import QtQuick.Layouts
 import Quickshell
 import qs.Common
 import qs.Services
+import qs.DankCommon.Common
 import qs.DankCommon.Widgets
 
-Rectangle {
+Item {
     id: root
 
     property var cropOverlay: null
 
-    implicitHeight: 46
-    implicitWidth: (ImageService.cropMode ? cropRow.implicitWidth : editRow.implicitWidth) + 24
-    radius: 23
-    color: Theme.withAlpha(Theme.chipSurface, 0.95)
-    border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.30)
-    border.width: 1
-    clip: true
-
-    Behavior on implicitWidth {
-        NumberAnimation {
-            duration: Theme.shortDuration
-            easing.type: Theme.standardEasing
-        }
+    readonly property var aspectModel: [
+        { label: "Free", ar: "" },
+        { label: "1:1",  ar: "1:1" },
+        { label: "4:3",  ar: "4:3" },
+        { label: "16:9", ar: "16:9" },
+        { label: "3:2",  ar: "3:2" }
+    ]
+    readonly property int aspectIndex: {
+        if (!cropOverlay) return 0
+        const ar = cropOverlay.aspectRatio ?? ""
+        for (let i = 0; i < aspectModel.length; i++) if (aspectModel[i].ar === ar) return i
+        return 0
     }
 
-    component BarButton: Rectangle {
-        id: btn
-        property string iconName: ""
-        property real iconRotation: 0
-        property string tooltipText: ""
-        property bool isActive: false
-        property color iconColor: isActive ? Theme.primary : Theme.surfaceText
-        signal clicked()
+    implicitWidth: ImageService.cropMode ? cropBar.implicitWidth : verticalSpeedDial.implicitWidth
+    implicitHeight: ImageService.cropMode ? cropBar.implicitHeight : verticalSpeedDial.implicitHeight
 
-        implicitWidth: 36
-        implicitHeight: 36
-        radius: 18
-        color: isActive ? Theme.primaryContainer : (btnMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent")
+    // ── 1. Editing Floating Grid Panel (Anchored right above Edit FAB) ──────────
+    Rectangle {
+        id: verticalSpeedDial
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        implicitWidth: editColumn.implicitWidth + Style.spacingM * 2
+        implicitHeight: editColumn.implicitHeight + Style.spacingM * 2
+        radius: Style.cornerRadiusXL
+        color: Style.withAlpha(Style.surfaceContainerHigh, 0.95)
+        border.color: Qt.rgba(Style.outlineVariant.r, Style.outlineVariant.g, Style.outlineVariant.b, 0.30)
+        border.width: Style.outlineWidth
+        clip: true
+        visible: opacity > 0
+        opacity: ImageService.editMode && !ImageService.cropMode ? 1.0 : 0.0
+        scale: opacity > 0 ? 1.0 : 0.8
+        transformOrigin: Item.BottomRight
 
-        Behavior on color {
-            ColorAnimation { duration: Theme.shorterDuration }
+        Behavior on opacity {
+            DankAnim {
+                duration: Style.shortDuration
+                easing.bezierCurve: Style.expressiveCurves.standard
+            }
+        }
+        Behavior on scale {
+            DankAnim {
+                duration: Style.shortDuration
+                easing.bezierCurve: Style.expressiveCurves.standard
+            }
         }
 
-        DankIcon {
+        ElevationShadow {
+            anchors.fill: parent
+            z: -1
+            targetRadius: parent.radius
+            targetColor: parent.color
+            level: Style.elevationLevel2
+        }
+
+        ColumnLayout {
+            id: editColumn
             anchors.centerIn: parent
-            name: btn.iconName
-            rotation: btn.iconRotation
-            size: 20
-            color: btn.iconColor
-        }
+            spacing: Style.spacingS
 
-        StateLayer {
-            id: btnMouse
-            cornerRadius: btn.radius
-            stateColor: Theme.primary
-            tooltipText: btn.tooltipText
-            tooltipSide: "top"
-            onClicked: btn.clicked()
-        }
-    }
-
-    component BarSeparator: Rectangle {
-        implicitWidth: 1
-        implicitHeight: 20
-        Layout.alignment: Qt.AlignVCenter
-        Layout.leftMargin: 2
-        Layout.rightMargin: 2
-        color: Theme.outlineVariant
-        opacity: 0.35
-    }
-
-    // Normal editing tools row
-    RowLayout {
-        id: editRow
-        anchors.centerIn: parent
-        spacing: 4
-        opacity: !ImageService.cropMode ? 1.0 : 0.0
-        visible: opacity > 0
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
-            }
-        }
-
-        // Group 1: Rotation
-        BarButton {
-            iconName: "rotate_left"
-            tooltipText: "Rotate Counter-Clockwise (L / Shift+R)"
-            onClicked: ImageService.rotateCounterClockwise()
-        }
-
-        BarButton {
-            iconName: "rotate_right"
-            tooltipText: "Rotate Clockwise (R)"
-            onClicked: ImageService.rotateClockwise()
-        }
-
-        BarSeparator {}
-
-        // Group 2: Flip
-        BarButton {
-            iconName: "flip"
-            tooltipText: "Flip Horizontally (H / M)"
-            onClicked: ImageService.toggleFlipHorizontal()
-        }
-
-        BarButton {
-            iconName: "flip"
-            iconRotation: 90
-            tooltipText: "Flip Vertically (V)"
-            onClicked: ImageService.toggleFlipVertical()
-        }
-
-        BarSeparator {}
-
-        // Group 3: Crop
-        BarButton {
-            iconName: "crop"
-            tooltipText: "Crop Image (X)"
-            isActive: ImageService.cropMode
-            onClicked: ImageService.toggleCropMode()
-        }
-
-        // Group 4: Annotate in Quick Capture
-        BarButton {
-            iconName: "draw"
-            tooltipText: "Annotate in Quick Capture (A)"
-            onClicked: ImageService.annotateImage()
-        }
-
-        BarSeparator {
-            visible: ImageService.isAnimated
-        }
-
-        // Animated image playback control
-        BarButton {
-            visible: ImageService.isAnimated
-            iconName: ImageService.isPlaying ? "pause" : "play_arrow"
-            tooltipText: ImageService.isPlaying ? "Pause Animation (Space)" : "Play Animation (Space)"
-            onClicked: ImageService.togglePlayback()
-        }
-
-
-
-        BarSeparator {}
-
-        // Group 6: Done / Close Button
-        Rectangle {
-            implicitWidth: doneBtnRow.implicitWidth + 20
-            implicitHeight: 34
-            radius: 17
-            color: doneMouse.containsMouse
-                ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.88)
-                : Theme.primary
-
-            Behavior on color { ColorAnimation { duration: Theme.shorterDuration } }
-
-            RowLayout {
-                id: doneBtnRow
-                anchors.centerIn: parent
-                spacing: 5
-
-                DankIcon {
-                    name: "check"
-                    size: 16
-                    color: Theme.onPrimary || Theme.primaryText
-                }
-
-                StyledText {
-                    text: "Done"
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Theme.fontWeightBold
-                    color: Theme.onPrimary || Theme.primaryText
-                }
-            }
-
-            StateLayer {
-                id: doneMouse
-                cornerRadius: 17
-                stateColor: Theme.onPrimary || Theme.primaryText
-                tooltipText: "Done Editing (E / Esc)"
-                tooltipSide: "top"
-                onClicked: ImageService.toggleEditMode()
-            }
-        }
-    }
-
-    // Morphed Crop Controls Row
-    RowLayout {
-        id: cropRow
-        anchors.centerIn: parent
-        spacing: 4
-        opacity: ImageService.cropMode ? 1.0 : 0.0
-        visible: opacity > 0
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
-            }
-        }
-
-        // Aspect ratio presets
-        Repeater {
-            model: [
-                { label: "Free",  ar: "" },
-                { label: "1:1",   ar: "1:1" },
-                { label: "4:3",   ar: "4:3" },
-                { label: "16:9",  ar: "16:9" },
-                { label: "3:2",   ar: "3:2" }
-            ]
-            delegate: Rectangle {
-                readonly property bool isSelected: root.cropOverlay ? root.cropOverlay.aspectRatio === modelData.ar : false
-                implicitWidth: arLabel.implicitWidth + 14
-                implicitHeight: 32
-                radius: 8
-                color: isSelected
-                    ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.25)
-                    : (arMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent")
-                border.color: isSelected
-                    ? Theme.primary
-                    : Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
+            // Group 1: Rotation Pair (Left & Right)
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                implicitWidth: rotateRow.implicitWidth + 8
+                implicitHeight: 46
+                radius: 12
+                color: Style.surfaceContainerHighest
+                border.color: Qt.rgba(Style.outlineVariant.r, Style.outlineVariant.g, Style.outlineVariant.b, 0.25)
                 border.width: 1
 
-                StyledText {
-                    id: arLabel
+                RowLayout {
+                    id: rotateRow
                     anchors.centerIn: parent
-                    text: modelData.label
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Theme.fontWeightMedium
-                    color: isSelected ? Theme.primary : Theme.surfaceText
-                }
+                    spacing: 4
 
-                StateLayer {
-                    id: arMouse
-                    cornerRadius: 8
-                    stateColor: Theme.primary
-                    tooltipSide: "top"
-                    onClicked: {
-                        if (root.cropOverlay) {
-                            root.cropOverlay.aspectRatio = modelData.ar;
-                            root.cropOverlay._applyAspect();
-                        }
+                    DankActionButton {
+                        iconName: "rotate_left"
+                        iconSize: Style.iconSizeMedium
+                        buttonSize: 38
+                        tooltipText: "Rotate Counter-Clockwise (L / Shift+R)"
+                        tooltipSide: "left"
+                        onClicked: ImageService.rotateCounterClockwise()
+                    }
+
+                    Rectangle {
+                        implicitWidth: 1
+                        implicitHeight: 22
+                        color: Style.outlineVariant
+                        opacity: 0.35
+                    }
+
+                    DankActionButton {
+                        iconName: "rotate_right"
+                        iconSize: Style.iconSizeMedium
+                        buttonSize: 38
+                        tooltipText: "Rotate Clockwise (R)"
+                        tooltipSide: "right"
+                        onClicked: ImageService.rotateClockwise()
+                    }
+                }
+            }
+
+            // Group 2: Flip Pair (Horizontal & Vertical)
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                implicitWidth: flipRow.implicitWidth + 8
+                implicitHeight: 46
+                radius: 12
+                color: Style.surfaceContainerHighest
+                border.color: Qt.rgba(Style.outlineVariant.r, Style.outlineVariant.g, Style.outlineVariant.b, 0.25)
+                border.width: 1
+
+                RowLayout {
+                    id: flipRow
+                    anchors.centerIn: parent
+                    spacing: 4
+
+                    DankActionButton {
+                        iconName: "flip"
+                        iconSize: Style.iconSizeMedium
+                        buttonSize: 38
+                        tooltipText: "Flip Horizontally (H / M)"
+                        tooltipSide: "left"
+                        onClicked: ImageService.toggleFlipHorizontal()
+                    }
+
+                    Rectangle {
+                        implicitWidth: 1
+                        implicitHeight: 22
+                        color: Style.outlineVariant
+                        opacity: 0.35
+                    }
+
+                    DankActionButton {
+                        iconName: "flip"
+                        iconSize: Style.iconSizeMedium
+                        buttonSize: 38
+                        tooltipText: "Flip Vertically (V)"
+                        tooltipSide: "right"
+                        transform: Rotation { angle: 90; origin.x: 19; origin.y: 19 }
+                        onClicked: ImageService.toggleFlipVertical()
+                    }
+                }
+            }
+
+            // Group 3: Creative Tools (Crop & Annotate)
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                implicitWidth: toolRow.implicitWidth + 8
+                implicitHeight: 46
+                radius: 12
+                color: Style.surfaceContainerHighest
+                border.color: Qt.rgba(Style.outlineVariant.r, Style.outlineVariant.g, Style.outlineVariant.b, 0.25)
+                border.width: 1
+
+                RowLayout {
+                    id: toolRow
+                    anchors.centerIn: parent
+                    spacing: 4
+
+                    DankActionButton {
+                        iconName: "crop"
+                        iconSize: Style.iconSizeMedium
+                        buttonSize: 38
+                        tooltipText: "Crop Image (X)"
+                        tooltipSide: "left"
+                        backgroundColor: ImageService.cropMode ? Style.primaryContainer : "transparent"
+                        iconColor: ImageService.cropMode ? Style.primary : Style.onSurfaceVariant
+                        stateColor: Style.primary
+                        onClicked: ImageService.toggleCropMode()
+                    }
+
+                    Rectangle {
+                        implicitWidth: 1
+                        implicitHeight: 22
+                        color: Style.outlineVariant
+                        opacity: 0.35
+                    }
+
+                    DankActionButton {
+                        iconName: "draw"
+                        iconSize: Style.iconSizeMedium
+                        buttonSize: 38
+                        tooltipText: "Annotate in Quick Capture (A)"
+                        tooltipSide: "right"
+                        onClicked: ImageService.annotateImage()
+                    }
+                }
+            }
+
+            // Optional Group 4: Animation Play/Pause (if animated GIF/APNG)
+            Rectangle {
+                visible: ImageService.isAnimated
+                Layout.alignment: Qt.AlignHCenter
+                implicitWidth: animRow.implicitWidth + 8
+                implicitHeight: 46
+                radius: 12
+                color: Style.surfaceContainerHighest
+                border.color: Qt.rgba(Style.outlineVariant.r, Style.outlineVariant.g, Style.outlineVariant.b, 0.25)
+                border.width: 1
+
+                RowLayout {
+                    id: animRow
+                    anchors.centerIn: parent
+
+                    DankActionButton {
+                        iconName: ImageService.isPlaying ? "pause" : "play_arrow"
+                        iconSize: Style.iconSizeMedium
+                        buttonSize: 38
+                        tooltipText: ImageService.isPlaying ? "Pause Animation (Space)" : "Play Animation (Space)"
+                        tooltipSide: "left"
+                        onClicked: ImageService.togglePlayback()
                     }
                 }
             }
         }
+    }
+
+    // ── 2. Horizontal Crop Bar (Only in crop mode at bottom center) ──────────────
+    Rectangle {
+        id: cropBar
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        implicitHeight: 46
+        implicitWidth: cropRow.implicitWidth + Style.spacingM * 2
+        radius: Style.fullRadius(height, height)
+        color: Style.withAlpha(Style.surfaceContainerHigh, 0.95)
+        border.color: Qt.rgba(Style.outlineVariant.r, Style.outlineVariant.g, Style.outlineVariant.b, 0.30)
+        border.width: Style.outlineWidth
+        clip: true
+        visible: opacity > 0
+        opacity: ImageService.cropMode ? 1.0 : 0.0
+        scale: opacity > 0 ? 1.0 : 0.92
+
+        Behavior on opacity {
+            DankAnim {
+                duration: Style.shortDuration
+                easing.bezierCurve: Style.expressiveCurves.standard
+            }
+        }
+        Behavior on scale {
+            DankAnim {
+                duration: Style.shortDuration
+                easing.bezierCurve: Style.expressiveCurves.standard
+            }
+        }
+
+        ElevationShadow {
+            anchors.fill: parent
+            z: -1
+            targetRadius: parent.radius
+            targetColor: parent.color
+            level: Style.elevationLevel2
+        }
+
+        component BarSeparator: Rectangle {
+            implicitWidth: Style.dividerWidth
+            implicitHeight: 20
+            Layout.alignment: Qt.AlignVCenter
+            Layout.leftMargin: Style.spacingXS / 2
+            Layout.rightMargin: Style.spacingXS / 2
+            color: Style.outlineVariant
+            opacity: 0.35
+        }
+
+    // Crop controls — same pill background
+    RowLayout {
+        id: cropRow
+        anchors.centerIn: parent
+        spacing: Style.spacingXS
+        opacity: ImageService.cropMode ? 1.0 : 0.0
+        visible: opacity > 0
+
+        Behavior on opacity {
+            DankAnim {
+                duration: Style.shortDuration
+                easing.bezierCurve: Style.expressiveCurves.standard
+            }
+        }
+
+        DankButtonGroup {
+            id: aspectGroup
+            model: root.aspectModel.map(m => m.label)
+            currentIndex: root.aspectIndex
+            size: "small"
+            onSelectionChanged: (index, selected) => {
+                if (!selected || !root.cropOverlay) return
+                root.cropOverlay.aspectRatio = root.aspectModel[index].ar
+                root.cropOverlay._applyAspect()
+            }
+        }
 
         BarSeparator {}
 
-        // Reset button
-        BarButton {
+        DankActionButton {
             iconName: "restart_alt"
+            iconSize: Style.iconSizeMedium
+            buttonSize: 34
             tooltipText: "Reset Crop Selection"
+            tooltipSide: "top"
             onClicked: {
                 if (root.cropOverlay) {
-                    root.cropOverlay.aspectRatio = "";
-                    root.cropOverlay.cropX = root.cropOverlay.imageX;
-                    root.cropOverlay.cropY = root.cropOverlay.imageY;
-                    root.cropOverlay.cropW = root.cropOverlay.imageW;
-                    root.cropOverlay.cropH = root.cropOverlay.imageH;
+                    root.cropOverlay.aspectRatio = ""
+                    root.cropOverlay.cropX = root.cropOverlay.imageX
+                    root.cropOverlay.cropY = root.cropOverlay.imageY
+                    root.cropOverlay.cropW = root.cropOverlay.imageW
+                    root.cropOverlay.cropH = root.cropOverlay.imageH
                 }
             }
         }
 
         BarSeparator {}
 
-        // Cancel button
-        Rectangle {
-            implicitWidth: cancelCropRow.implicitWidth + 18
-            implicitHeight: 34
-            radius: 17
-            color: cancelCropMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent"
-            border.color: Qt.rgba(Theme.outlineVariant.r, Theme.outlineVariant.g, Theme.outlineVariant.b, 0.35)
-            border.width: 1
-
-            RowLayout {
-                id: cancelCropRow
-                anchors.centerIn: parent
-                spacing: 4
-                DankIcon { name: "close"; size: 16; color: Theme.surfaceText }
-                StyledText {
-                    text: "Cancel"
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Theme.fontWeightMedium
-                    color: Theme.surfaceText
-                }
-            }
-
-            StateLayer {
-                id: cancelCropMouse
-                cornerRadius: 17
-                stateColor: Theme.surfaceText
-                tooltipText: "Cancel Crop (Esc)"
-                tooltipSide: "top"
-                onClicked: {
-                    if (root.cropOverlay)
-                        root.cropOverlay.cancelled();
-                }
+        DankButton {
+            text: "Cancel"
+            iconName: "close"
+            buttonHeight: Style.buttonHeightXS
+            backgroundColor: Style.surfaceContainerHighest
+            textColor: Style.onSurfaceVariant
+            tooltipText: "Cancel Crop (Esc)"
+            tooltipSide: "top"
+            onClicked: {
+                if (root.cropOverlay)
+                    root.cropOverlay.cancelled()
             }
         }
 
-        // Apply / Done button
-        Rectangle {
-            implicitWidth: applyCropRow.implicitWidth + 18
-            implicitHeight: 34
-            radius: 17
-            color: applyCropMouse.containsMouse
-                ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.88)
-                : Theme.primary
-
-            Behavior on color { ColorAnimation { duration: Theme.shorterDuration } }
-
-            RowLayout {
-                id: applyCropRow
-                anchors.centerIn: parent
-                spacing: 4
-                DankIcon { name: "check"; size: 16; color: Theme.onPrimary || Theme.primaryText }
-                StyledText {
-                    text: "Done"
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Theme.fontWeightBold
-                    color: Theme.onPrimary || Theme.primaryText
-                }
-            }
-
-            StateLayer {
-                id: applyCropMouse
-                cornerRadius: 17
-                stateColor: Theme.onPrimary || Theme.primaryText
-                tooltipText: "Apply Crop (Enter)"
-                tooltipSide: "top"
-                onClicked: {
-                    if (root.cropOverlay)
-                        root.cropOverlay.applyCrop();
-                }
+        DankButton {
+            text: "Done"
+            iconName: "check"
+            buttonHeight: Style.buttonHeightXS
+            backgroundColor: Style.primary
+            textColor: Style.onPrimary
+            tooltipText: "Apply Crop (Enter)"
+            tooltipSide: "top"
+            onClicked: {
+                if (root.cropOverlay)
+                    root.cropOverlay.applyCrop()
             }
         }
     }
 }
+}
+
